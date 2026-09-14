@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/flyer",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Abu Hureirah Situation Room: Sudan Wing",
+      "hasCanvas": false,
+      "bodyTextLen": 557,
+      "bodyTextHash": "161890308f7fbbd3f0309b024836d3594c24f1d4a2d75cc90c18fdfa8a857b03",
+      "bodyTextPrefix": "Sitroom POSTER WIDE BADGE Print UNCLASSIFIED // OPEN SOURCE ABU ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/flyer-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Abu Hureirah Situation Room: Sudan Wing",
+      "hasCanvas": false,
+      "bodyTextLen": 557,
+      "bodyTextHash": "161890308f7fbbd3f0309b024836d3594c24f1d4a2d75cc90c18fdfa8a857b03",
+      "bodyTextPrefix": "Sitroom POSTER WIDE BADGE Print UNCLASSIFIED // OPEN SOURCE ABU ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/flyer-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/flyer-preview.json"
+}

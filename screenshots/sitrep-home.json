@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Abu Hureirah Situation Room: Sudan Wing",
+      "hasCanvas": false,
+      "bodyTextLen": 109842,
+      "bodyTextHash": "0bce9a16a68e7716f1b0303f7dbec744481b02662f27574267e570bc596b63b0",
+      "bodyTextPrefix": "—·S2 cloudless 2024 UNCLASSIFIED // OPEN SOURCE DOCUMENTATION ON",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/sitrep-home.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Abu Hureirah Situation Room: Sudan Wing",
+      "hasCanvas": false,
+      "bodyTextLen": 108911,
+      "bodyTextHash": "a8e069ea92e592f28b8c396e24832c81adbd42c9f7a316d252205abc8277deee",
+      "bodyTextPrefix": "UNCLASSIFIED // OPEN SOURCE ABU HUREIRAH AHSR · SDN 474 records ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/sitrep-home-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/sitrep-home.json"
+}

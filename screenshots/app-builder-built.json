@@ -1,0 +1,38 @@
+{
+  "url": "http://127.0.0.1:8081/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Abu Hureirah Situation Room: Sudan Wing",
+      "hasCanvas": false,
+      "bodyTextLen": 110277,
+      "bodyTextHash": "fd5f4ed62dccb3ca01e82ed82bf2803bf7c3b75d415f81e2b8e93f0defbf8ab7",
+      "bodyTextPrefix": "—·S2 mosaic 2024 UNCLASSIFIED // OPEN SOURCE DOCUMENTATION ONLY ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Abu Hureirah Situation Room: Sudan Wing",
+      "hasCanvas": false,
+      "bodyTextLen": 109222,
+      "bodyTextHash": "0b7035ae2c869f1f4d8c1beead136fb02d33aac679d789a16e21165614260154",
+      "bodyTextPrefix": "UNCLASSIFIED // OPEN SOURCE ABU HUREIRAH AHSR · SDN Satellite im",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-built.json",
+  "divergesFromBaseline": false,
+  "baselineReasons": []
+}

@@ -1,0 +1,1739 @@
+[
+  {
+    "id": "oa-adv",
+    "name": "El Daein Airport (ADV)",
+    "kind": "strip",
+    "lat": 11.4023,
+    "lon": 26.1186,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hjar",
+    "name": "Adareil Airport (HJAR)",
+    "kind": "strip",
+    "lat": 10.05361,
+    "lon": 32.95944,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-bje",
+    "name": "Baleela Airport (BJE)",
+    "kind": "strip",
+    "lat": 11.19944,
+    "lon": 28.52306,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-cf-0006",
+    "name": "Goro Airport (CF-0006)",
+    "kind": "strip",
+    "lat": 9.27123,
+    "lon": 21.19556,
+    "country": "CF",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-cf-0007",
+    "name": "Ouandjia Sam Airport (CF-0007)",
+    "kind": "strip",
+    "lat": 8.52416,
+    "lon": 23.24027,
+    "country": "CF",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hebr",
+    "name": "Berenice International Airport / Banas Cape Air Base (HEBR)",
+    "kind": "airfield",
+    "lat": 23.98044,
+    "lon": 35.46028,
+    "country": "EG",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-eg-0016",
+    "name": "Sheikh Zayed Canal Lift Station Heliport (EG-0016)",
+    "kind": "heliport",
+    "lat": 22.81773,
+    "lon": 31.46269,
+    "country": "EG",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-eg-0024",
+    "name": "Toshka Pump Station Heliport (EG-0024)",
+    "kind": "heliport",
+    "lat": 22.63762,
+    "lon": 31.85165,
+    "country": "EG",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-eg-0025",
+    "name": "Temple of Derr Heliport (EG-0025)",
+    "kind": "heliport",
+    "lat": 22.75142,
+    "lon": 32.26982,
+    "country": "EG",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-eg-0026",
+    "name": "Sadat Resthouse Heliport (EG-0026)",
+    "kind": "heliport",
+    "lat": 23.25856,
+    "lon": 32.71406,
+    "country": "EG",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-et-0005",
+    "name": "African Union Heliport (ET-0005)",
+    "kind": "heliport",
+    "lat": 8.99948,
+    "lon": 38.7425,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-et-0006",
+    "name": "Bameza - Grand Ethiopian Renaissance Dam Airport (ET-0006)",
+    "kind": "strip",
+    "lat": 11.1269,
+    "lon": 35.04396,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hasr",
+    "name": "Shire Inda Selassie Airport (HASR)",
+    "kind": "strip",
+    "lat": 14.0757,
+    "lon": 38.27359,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-fefi",
+    "name": "Birao Airport (FEFI)",
+    "kind": "strip",
+    "lat": 10.2364,
+    "lon": 22.7169,
+    "country": "CF",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-fefn",
+    "name": "N'D\u00e9l\u00e9 Airport (FEFN)",
+    "kind": "strip",
+    "lat": 8.42721,
+    "lon": 20.63516,
+    "country": "CF",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-fefw",
+    "name": "Ouadda Airport (FEFW)",
+    "kind": "strip",
+    "lat": 8.01056,
+    "lon": 22.3986,
+    "country": "CF",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-fegl",
+    "name": "Gordil Airport (FEGL)",
+    "kind": "strip",
+    "lat": 9.58112,
+    "lon": 21.72817,
+    "country": "CF",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-fego",
+    "name": "Ouanda Djall\u00e9 Airport (FEGO)",
+    "kind": "strip",
+    "lat": 8.9,
+    "lon": 22.783,
+    "country": "CF",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ftfy",
+    "name": "Ouadi Doum Air Base (FTFY)",
+    "kind": "airfield",
+    "lat": 18.52793,
+    "lon": 20.18864,
+    "country": "TD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-fttc",
+    "name": "Abeche Airport (FTTC)",
+    "kind": "airfield",
+    "lat": 13.847,
+    "lon": 20.8443,
+    "country": "TD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ftte",
+    "name": "Biltine Airport (FTTE)",
+    "kind": "strip",
+    "lat": 14.55191,
+    "lon": 20.84183,
+    "country": "TD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-fttf",
+    "name": "Fada Airport (FTTF)",
+    "kind": "strip",
+    "lat": 17.19126,
+    "lon": 21.50353,
+    "country": "TD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-fttg",
+    "name": "Goz-Beida Airport (FTTG)",
+    "kind": "strip",
+    "lat": 12.21095,
+    "lon": 21.45847,
+    "country": "TD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-fttn",
+    "name": "Am Timan Airport (FTTN)",
+    "kind": "strip",
+    "lat": 11.034,
+    "lon": 20.274,
+    "country": "TD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-haab",
+    "name": "Addis Ababa Bole International Airport (HAAB)",
+    "kind": "airfield",
+    "lat": 8.97789,
+    "lon": 38.7993,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-haal",
+    "name": "Lideta Army Airport (HAAL)",
+    "kind": "strip",
+    "lat": 9.00369,
+    "lon": 38.7255,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-haax",
+    "name": "Axum Airport (HAAX)",
+    "kind": "airfield",
+    "lat": 14.1468,
+    "lon": 38.7728,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-habd",
+    "name": "Bahir Dar Airport (HABD)",
+    "kind": "airfield",
+    "lat": 11.6081,
+    "lon": 37.3216,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-habe",
+    "name": "Beica Airport (HABE)",
+    "kind": "strip",
+    "lat": 9.38639,
+    "lon": 34.5219,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hadd",
+    "name": "Dembidollo Airport (HADD)",
+    "kind": "strip",
+    "lat": 8.554,
+    "lon": 34.858,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hadm",
+    "name": "Debre Markos Airport (HADM)",
+    "kind": "strip",
+    "lat": 10.3215,
+    "lon": 37.74189,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hadt",
+    "name": "Debre Tabor Airport (HADT)",
+    "kind": "strip",
+    "lat": 11.88481,
+    "lon": 38.00924,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hafn",
+    "name": "Fincha Airport (HAFN)",
+    "kind": "strip",
+    "lat": 9.58439,
+    "lon": 37.37785,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hagm",
+    "name": "Gambela Airport (HAGM)",
+    "kind": "airfield",
+    "lat": 8.12876,
+    "lon": 34.5631,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hagn",
+    "name": "Gondar Airport (HAGN)",
+    "kind": "airfield",
+    "lat": 12.5199,
+    "lon": 37.434,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hagr",
+    "name": "Gore Airport (HAGR)",
+    "kind": "strip",
+    "lat": 8.1614,
+    "lon": 35.5529,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hahm",
+    "name": "Harar Meda Airport (HAHM)",
+    "kind": "airfield",
+    "lat": 8.7163,
+    "lon": 39.0059,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hahu",
+    "name": "Humera Airport (HAHU)",
+    "kind": "strip",
+    "lat": 13.83012,
+    "lon": 36.88237,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hall",
+    "name": "Lalibela Airport (HALL)",
+    "kind": "strip",
+    "lat": 11.97523,
+    "lon": 38.9802,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hama",
+    "name": "Mekane Selam Airport (HAMA)",
+    "kind": "strip",
+    "lat": 10.7254,
+    "lon": 38.7415,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hamm",
+    "name": "Metema Airport (HAMM)",
+    "kind": "strip",
+    "lat": 12.933,
+    "lon": 36.167,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hamn",
+    "name": "Mendi Airport (HAMN)",
+    "kind": "strip",
+    "lat": 9.767,
+    "lon": 35.1,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hanj",
+    "name": "Nejjo Airport (HANJ)",
+    "kind": "strip",
+    "lat": 9.55,
+    "lon": 35.46699,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hank",
+    "name": "Nekemte Airport (HANK)",
+    "kind": "strip",
+    "lat": 9.03433,
+    "lon": 36.61315,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hapw",
+    "name": "Beles Airport (HAPW)",
+    "kind": "strip",
+    "lat": 11.3126,
+    "lon": 36.4164,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-haso",
+    "name": "Asosa Airport (HASO)",
+    "kind": "airfield",
+    "lat": 10.0185,
+    "lon": 34.5863,
+    "country": "ET",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-he17",
+    "name": "Abu Rahal Well Airport (HE17)",
+    "kind": "strip",
+    "lat": 24.99866,
+    "lon": 33.49429,
+    "country": "EG",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-he23",
+    "name": "Darau Airport (HE23)",
+    "kind": "strip",
+    "lat": 24.41491,
+    "lon": 32.95167,
+    "country": "EG",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hebl",
+    "name": "Abu Simbel Airport (HEBL)",
+    "kind": "airfield",
+    "lat": 22.37592,
+    "lon": 31.61173,
+    "country": "EG",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-heow",
+    "name": "El Owainat East International Airport (HEOW)",
+    "kind": "strip",
+    "lat": 22.58426,
+    "lon": 28.72161,
+    "country": "EG",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hesn",
+    "name": "Aswan International Airport (HESN)",
+    "kind": "airfield",
+    "lat": 23.96108,
+    "lon": 32.82038,
+    "country": "EG",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hjkj",
+    "name": "Kawjok Airport (HJKJ)",
+    "kind": "strip",
+    "lat": 8.27962,
+    "lon": 27.95583,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hl56",
+    "name": "Matan al-Sarra Air Base (HL56)",
+    "kind": "airfield",
+    "lat": 21.6877,
+    "lon": 21.8309,
+    "country": "LY",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hlkf",
+    "name": "Kufra Airport (HLKF)",
+    "kind": "airfield",
+    "lat": 24.1787,
+    "lon": 23.314,
+    "country": "LY",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsat",
+    "name": "Atbara Airport (HSAT)",
+    "kind": "strip",
+    "lat": 17.70993,
+    "lon": 34.05721,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hjaw",
+    "name": "Aweil Airport (HJAW)",
+    "kind": "strip",
+    "lat": 8.79138,
+    "lon": 27.36015,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hjbt",
+    "name": "Bentiu Airport (HJBT)",
+    "kind": "strip",
+    "lat": 9.30849,
+    "lon": 29.78732,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hscg",
+    "name": "Carthago Airport (HSCG)",
+    "kind": "strip",
+    "lat": 18.75139,
+    "lon": 36.99167,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsdb",
+    "name": "Al Dabbah Airport (HSDB)",
+    "kind": "strip",
+    "lat": 18.0146,
+    "lon": 30.9595,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsdn",
+    "name": "Dongola Airport (HSDN)",
+    "kind": "airfield",
+    "lat": 19.15367,
+    "lon": 30.43007,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsdz",
+    "name": "Damazin Airport (HSDZ)",
+    "kind": "strip",
+    "lat": 11.7859,
+    "lon": 34.3367,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hjph",
+    "name": "Paloich Airport (HJPH)",
+    "kind": "airfield",
+    "lat": 10.52917,
+    "lon": 32.50056,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsfs",
+    "name": "El Fasher Airport (HSFS)",
+    "kind": "airfield",
+    "lat": 13.6149,
+    "lon": 25.3246,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsgg",
+    "name": "Galegu Airport (HSGG)",
+    "kind": "strip",
+    "lat": 12.533,
+    "lon": 35.067,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsgn",
+    "name": "Geneina Airport (HSGN)",
+    "kind": "strip",
+    "lat": 13.48188,
+    "lon": 22.46712,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsgo",
+    "name": "Gogrial Airport (HSGO)",
+    "kind": "strip",
+    "lat": 18.867,
+    "lon": 28.117,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hshg",
+    "name": "Heglig Airport (HSHG)",
+    "kind": "strip",
+    "lat": 9.99493,
+    "lon": 29.39772,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hska",
+    "name": "Kassala Airport (HSKA)",
+    "kind": "airfield",
+    "lat": 15.3875,
+    "lon": 36.3288,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hskg",
+    "name": "Khashm El Girba Airport (HSKG)",
+    "kind": "strip",
+    "lat": 14.925,
+    "lon": 35.878,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hskn",
+    "name": "Kenana Airport (HSKN)",
+    "kind": "strip",
+    "lat": 13.05343,
+    "lon": 32.90732,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsli",
+    "name": "Kadugli Airport (HSLI)",
+    "kind": "strip",
+    "lat": 11.138,
+    "lon": 29.7011,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsmn",
+    "name": "Merowe Airport (HSMN)",
+    "kind": "airfield",
+    "lat": 18.44333,
+    "lon": 31.84333,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsmr",
+    "name": "Merowe Town Airport (HSMR)",
+    "kind": "strip",
+    "lat": 18.455,
+    "lon": 31.8185,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsnh",
+    "name": "En Nahud Airport (HSNH)",
+    "kind": "strip",
+    "lat": 12.73551,
+    "lon": 28.41084,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsnn",
+    "name": "Nyala Airport (HSNN)",
+    "kind": "airfield",
+    "lat": 12.0535,
+    "lon": 24.9562,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsnw",
+    "name": "New Halfa Airport (HSNW)",
+    "kind": "strip",
+    "lat": 15.3556,
+    "lon": 35.7278,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsob",
+    "name": "El-Obeid Airport (HSOB)",
+    "kind": "airfield",
+    "lat": 13.1532,
+    "lon": 30.2327,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hspn",
+    "name": "Port Sudan New International Airport (HSPN)",
+    "kind": "airfield",
+    "lat": 19.43456,
+    "lon": 37.23412,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsrj",
+    "name": "Raga Airport (HSRJ)",
+    "kind": "strip",
+    "lat": 8.46111,
+    "lon": 25.6811,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsrn",
+    "name": "Renk Airport (HSRN)",
+    "kind": "strip",
+    "lat": 11.64477,
+    "lon": 32.81045,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hssg",
+    "name": "Sabera Geneina Airport (HSSG)",
+    "kind": "airfield",
+    "lat": 13.4774,
+    "lon": 22.53722,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hssk",
+    "name": "Khartoum International Airport (HSSK)",
+    "kind": "airfield",
+    "lat": 15.5895,
+    "lon": 32.5532,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hjmk",
+    "name": "Malakal International Airport (HJMK)",
+    "kind": "airfield",
+    "lat": 9.55874,
+    "lon": 31.65194,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hssp",
+    "name": "Port Sudan Air Base (HSSP)",
+    "kind": "strip",
+    "lat": 19.5765,
+    "lon": 37.2159,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hssw",
+    "name": "Wadi Halfa Airport (HSSW)",
+    "kind": "strip",
+    "lat": 21.8027,
+    "lon": 31.52158,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsza",
+    "name": "Zalingei Airport (HSZA)",
+    "kind": "strip",
+    "lat": 12.9437,
+    "lon": 23.5631,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0001",
+    "name": "Wadi Seidna Air Base (SD-0001)",
+    "kind": "airfield",
+    "lat": 15.81521,
+    "lon": 32.51401,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0002",
+    "name": "Zalengei Heliport (SD-0002)",
+    "kind": "heliport",
+    "lat": 12.9029,
+    "lon": 23.4635,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0003",
+    "name": "Kutum Airport (SD-0003)",
+    "kind": "strip",
+    "lat": 14.22059,
+    "lon": 24.63362,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0004",
+    "name": "Gereida Airport (SD-0004)",
+    "kind": "strip",
+    "lat": 11.25602,
+    "lon": 25.14371,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0005",
+    "name": "Jabal Burqat Karkor Airport (SD-0005)",
+    "kind": "strip",
+    "lat": 19.60021,
+    "lon": 33.32162,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0006",
+    "name": "Songo Airstrip (SD-0006)",
+    "kind": "strip",
+    "lat": 9.77433,
+    "lon": 24.30623,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0007",
+    "name": "Abu Hamad Airport (SD-0007)",
+    "kind": "strip",
+    "lat": 19.56507,
+    "lon": 33.31448,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0008",
+    "name": "Muhandiseen Military Hospital Heliport (SD-0008)",
+    "kind": "heliport",
+    "lat": 15.61515,
+    "lon": 32.48534,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0009",
+    "name": "Kenana Air Base (SD-0009)",
+    "kind": "strip",
+    "lat": 13.08944,
+    "lon": 32.85346,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0011",
+    "name": "FDOC Base Camp Heliport (SD-0011)",
+    "kind": "heliport",
+    "lat": 12.49281,
+    "lon": 32.85269,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0013",
+    "name": "Sinjah Airport (SD-0013)",
+    "kind": "strip",
+    "lat": 13.31905,
+    "lon": 33.61347,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0014",
+    "name": "Al Hawatah Airport (SD-0014)",
+    "kind": "strip",
+    "lat": 13.44856,
+    "lon": 34.62143,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0015",
+    "name": "Al Jazirah Agricultural Airport (SD-0015)",
+    "kind": "strip",
+    "lat": 14.29599,
+    "lon": 33.54722,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0016",
+    "name": "Abri Airport (SD-0016)",
+    "kind": "strip",
+    "lat": 20.77819,
+    "lon": 30.3489,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0018",
+    "name": "Kenana East Airport (SD-0018)",
+    "kind": "strip",
+    "lat": 13.15052,
+    "lon": 33.01786,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0019",
+    "name": "Agok Local Airport (SD-0019)",
+    "kind": "strip",
+    "lat": 9.36001,
+    "lon": 28.58404,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0020",
+    "name": "GNPOC Diffra Helipad (SD-0020)",
+    "kind": "heliport",
+    "lat": 10.04924,
+    "lon": 28.40735,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0021",
+    "name": "UNISFA Abyei Heliport (SD-0021)",
+    "kind": "heliport",
+    "lat": 9.58446,
+    "lon": 28.44298,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0022",
+    "name": "UNISFA Abyei East Helipad (SD-0022)",
+    "kind": "heliport",
+    "lat": 9.5859,
+    "lon": 28.4498,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0023",
+    "name": "Athony Airstrip (SD-0023)",
+    "kind": "strip",
+    "lat": 9.46824,
+    "lon": 28.4662,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0024",
+    "name": "UNISFA Tajalei Helipad (SD-0024)",
+    "kind": "heliport",
+    "lat": 9.67371,
+    "lon": 28.59328,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hsnd",
+    "name": "Shendi Airport (HSND)",
+    "kind": "strip",
+    "lat": 16.70378,
+    "lon": 33.4464,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0029",
+    "name": "Sennar Sugar Factory Airfield (SD-0029)",
+    "kind": "strip",
+    "lat": 13.76607,
+    "lon": 33.42155,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-sd-0030",
+    "name": "Wad Madani Heliport (SD-0030)",
+    "kind": "heliport",
+    "lat": 14.40665,
+    "lon": 33.53447,
+    "country": "SD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hjwt",
+    "name": "Waat Airstrip (HJWT)",
+    "kind": "strip",
+    "lat": 8.18965,
+    "lon": 32.15287,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hjpr",
+    "name": "Pieri Airstrip (HJPR)",
+    "kind": "strip",
+    "lat": 8.04048,
+    "lon": 32.02882,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hjmg",
+    "name": "Mogok Airstrip (HJMG)",
+    "kind": "strip",
+    "lat": 8.41396,
+    "lon": 31.33333,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hjay",
+    "name": "Ayod Airstrip (HJAY)",
+    "kind": "strip",
+    "lat": 8.13795,
+    "lon": 31.40618,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0012",
+    "name": "Buk Airfield (SS-0012)",
+    "kind": "strip",
+    "lat": 8.01096,
+    "lon": 31.42811,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0013",
+    "name": "Pathai Airstrip (SS-0013)",
+    "kind": "strip",
+    "lat": 8.06259,
+    "lon": 31.84007,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hjpu",
+    "name": "Pulturuk Airstrip (HJPU)",
+    "kind": "strip",
+    "lat": 8.59535,
+    "lon": 31.94982,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-hjlk",
+    "name": "Lankien Airstrip (HJLK)",
+    "kind": "strip",
+    "lat": 8.52937,
+    "lon": 32.06383,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0023",
+    "name": "Doregh Airstrip (SS-0023)",
+    "kind": "strip",
+    "lat": 9.04242,
+    "lon": 30.70938,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0024",
+    "name": "Keew Airstrip (SS-0024)",
+    "kind": "strip",
+    "lat": 9.26371,
+    "lon": 30.63692,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0025",
+    "name": "Tuai Bur Airstrip (SS-0025)",
+    "kind": "strip",
+    "lat": 9.39234,
+    "lon": 30.66912,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0029",
+    "name": "Melut Airport (SS-0029)",
+    "kind": "strip",
+    "lat": 10.3342,
+    "lon": 32.26825,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0030",
+    "name": "Athidwey Airport (SS-0030)",
+    "kind": "strip",
+    "lat": 10.26976,
+    "lon": 32.22511,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0031",
+    "name": "Payuer Airport (SS-0031)",
+    "kind": "strip",
+    "lat": 10.07147,
+    "lon": 32.28504,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0032",
+    "name": "Kodok Airport (SS-0032)",
+    "kind": "strip",
+    "lat": 9.89608,
+    "lon": 32.12014,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0033",
+    "name": "Tondiak Airport (SS-0033)",
+    "kind": "strip",
+    "lat": 9.39786,
+    "lon": 31.15106,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0034",
+    "name": "Thar Jath Airport (SS-0034)",
+    "kind": "strip",
+    "lat": 8.78311,
+    "lon": 30.13077,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0035",
+    "name": "Dwil Keil Heliport (SS-0035)",
+    "kind": "heliport",
+    "lat": 8.84604,
+    "lon": 29.9147,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0036",
+    "name": "Koch Airport (SS-0036)",
+    "kind": "strip",
+    "lat": 8.60289,
+    "lon": 29.98998,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0037",
+    "name": "Bieh Airport (SS-0037)",
+    "kind": "strip",
+    "lat": 8.46238,
+    "lon": 30.13021,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0038",
+    "name": "Padeah Airport (SS-0038)",
+    "kind": "strip",
+    "lat": 8.4094,
+    "lon": 30.18628,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0039",
+    "name": "Thornyor Airfield (SS-0039)",
+    "kind": "strip",
+    "lat": 8.22396,
+    "lon": 30.22138,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0042",
+    "name": "Leer Airport (SS-0042)",
+    "kind": "strip",
+    "lat": 8.3081,
+    "lon": 30.11517,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0043",
+    "name": "Dablual Airport (SS-0043)",
+    "kind": "strip",
+    "lat": 8.31798,
+    "lon": 30.01107,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0044",
+    "name": "Paguir Airport (SS-0044)",
+    "kind": "strip",
+    "lat": 9.11176,
+    "lon": 30.76653,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0045",
+    "name": "Kuernyang Airport (SS-0045)",
+    "kind": "strip",
+    "lat": 9.32284,
+    "lon": 30.88816,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0046",
+    "name": "Manajang Airport (SS-0046)",
+    "kind": "strip",
+    "lat": 9.32928,
+    "lon": 30.71316,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0047",
+    "name": "Thokchak Airport (SS-0047)",
+    "kind": "strip",
+    "lat": 9.17726,
+    "lon": 30.74859,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0048",
+    "name": "Nimni Airport (SS-0048)",
+    "kind": "strip",
+    "lat": 9.31332,
+    "lon": 30.01904,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0049",
+    "name": "GPOC Unity Airstrip (SS-0049)",
+    "kind": "strip",
+    "lat": 9.47649,
+    "lon": 29.66566,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0050",
+    "name": "Riangther Airport (SS-0050)",
+    "kind": "strip",
+    "lat": 9.70275,
+    "lon": 30.15421,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0051",
+    "name": "Adok Airport (SS-0051)",
+    "kind": "strip",
+    "lat": 8.20699,
+    "lon": 30.29131,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0058",
+    "name": "Mankien Airstrip (SS-0058)",
+    "kind": "strip",
+    "lat": 9.04958,
+    "lon": 29.0835,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0059",
+    "name": "Aweng Airstrip (SS-0059)",
+    "kind": "strip",
+    "lat": 9.10337,
+    "lon": 28.56128,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0060",
+    "name": "Worldvision Field Office Heliport (SS-0060)",
+    "kind": "heliport",
+    "lat": 9.06958,
+    "lon": 28.41241,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0061",
+    "name": "Turalei Airstrip (SS-0061)",
+    "kind": "strip",
+    "lat": 9.08177,
+    "lon": 28.4359,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0062",
+    "name": "Wunrock Airport (SS-0062)",
+    "kind": "strip",
+    "lat": 8.97826,
+    "lon": 28.29813,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0063",
+    "name": "Panliet Airstrip (SS-0063)",
+    "kind": "strip",
+    "lat": 8.84716,
+    "lon": 28.2321,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0064",
+    "name": "Alek Airfield (SS-0064)",
+    "kind": "strip",
+    "lat": 8.6662,
+    "lon": 28.15377,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0066",
+    "name": "Abiemnom Airstrip (SS-0066)",
+    "kind": "strip",
+    "lat": 9.41258,
+    "lon": 28.83009,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0070",
+    "name": "Pulchol Airstrip (SS-0070)",
+    "kind": "strip",
+    "lat": 8.12531,
+    "lon": 31.95667,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0071",
+    "name": "Motot Airstrip (SS-0071)",
+    "kind": "strip",
+    "lat": 8.16715,
+    "lon": 32.041,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0072",
+    "name": "Walgak Airstrip (SS-0072)",
+    "kind": "strip",
+    "lat": 8.1583,
+    "lon": 32.24279,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0073",
+    "name": "Loing Airstrip (SS-0073)",
+    "kind": "strip",
+    "lat": 8.17259,
+    "lon": 32.21466,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0075",
+    "name": "UNISFA Doukra Camp Heliport (SS-0075)",
+    "kind": "heliport",
+    "lat": 9.62524,
+    "lon": 28.4342,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-ss-0076",
+    "name": "UNISFA Todach Camp Heliport (SS-0076)",
+    "kind": "heliport",
+    "lat": 9.73357,
+    "lon": 28.47275,
+    "country": "SS",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-td-0009",
+    "name": "Haraze Airport (TD-0009)",
+    "kind": "strip",
+    "lat": 9.9187,
+    "lon": 20.90368,
+    "country": "TD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-td-0011",
+    "name": "Iriba Airport (TD-0011)",
+    "kind": "strip",
+    "lat": 15.13412,
+    "lon": 22.22135,
+    "country": "TD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-td-0013",
+    "name": "Gu\u00e9r\u00e9da Airport (TD-0013)",
+    "kind": "strip",
+    "lat": 14.5642,
+    "lon": 22.07495,
+    "country": "TD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-td-0014",
+    "name": "Amdjarass Airport (TD-0014)",
+    "kind": "strip",
+    "lat": 15.97096,
+    "lon": 22.77059,
+    "country": "TD",
+    "source": "ourairports"
+  },
+  {
+    "id": "oa-td-0016",
+    "name": "Adr\u00e9 Airport (TD-0016)",
+    "kind": "strip",
+    "lat": 13.48104,
+    "lon": 22.17973,
+    "country": "TD",
+    "source": "ourairports"
+  },
+  {
+    "id": "osm-wadi-sayyidna",
+    "name": "Wadi Sayyidna airbase",
+    "kind": "base",
+    "lat": 15.783,
+    "lon": 32.522,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-jebel-awlia",
+    "name": "Jebel Awlia / Jebel Aulia",
+    "kind": "base",
+    "lat": 15.239,
+    "lon": 32.486,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-merowe-dam",
+    "name": "Merowe Dam precinct",
+    "kind": "compound",
+    "lat": 18.669,
+    "lon": 31.979,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-heglig",
+    "name": "Heglig oil complex",
+    "kind": "yard",
+    "lat": 9.999,
+    "lon": 29.433,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-adre-crossing",
+    "name": "Adr\u00e9\u2013Geneina crossing",
+    "kind": "crossing",
+    "lat": 13.466,
+    "lon": 22.198,
+    "country": "TD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-tine-crossing",
+    "name": "Tin\u00e8 crossing",
+    "kind": "crossing",
+    "lat": 15.32,
+    "lon": 22.0,
+    "country": "TD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-gallabat",
+    "name": "Gallabat\u2013Metemma crossing",
+    "kind": "crossing",
+    "lat": 12.958,
+    "lon": 36.15,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-kurmuk-xing",
+    "name": "Kurmuk crossing",
+    "kind": "crossing",
+    "lat": 10.55,
+    "lon": 34.28,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-port-sudan-quay",
+    "name": "Port Sudan quays",
+    "kind": "port",
+    "lat": 19.6158,
+    "lon": 37.2164,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-sawakin",
+    "name": "Suakin port",
+    "kind": "port",
+    "lat": 19.104,
+    "lon": 37.332,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-kosti-nile",
+    "name": "Kosti Nile port",
+    "kind": "port",
+    "lat": 13.171,
+    "lon": 32.666,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-wadi-halfa",
+    "name": "Wadi Halfa lake port",
+    "kind": "port",
+    "lat": 21.916,
+    "lon": 31.35,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-khartoum-refinery",
+    "name": "Al Jaili / Khartoum refinery",
+    "kind": "yard",
+    "lat": 16.039,
+    "lon": 32.662,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-giad",
+    "name": "Giad industrial complex",
+    "kind": "yard",
+    "lat": 15.316,
+    "lon": 32.733,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-bahri-yards",
+    "name": "Khartoum North rail yards",
+    "kind": "yard",
+    "lat": 15.64,
+    "lon": 32.56,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-omdurman-souq",
+    "name": "Omdurman central souq",
+    "kind": "market",
+    "lat": 15.644,
+    "lon": 32.478,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-shendi",
+    "name": "Shendi airstrip area",
+    "kind": "strip",
+    "lat": 16.69,
+    "lon": 33.43,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-abyei",
+    "name": "Abyei airstrip",
+    "kind": "strip",
+    "lat": 9.59,
+    "lon": 28.44,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-kauda",
+    "name": "Kauda airstrip",
+    "kind": "strip",
+    "lat": 11.07,
+    "lon": 30.53,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-talodi",
+    "name": "Talodi airstrip",
+    "kind": "strip",
+    "lat": 10.63,
+    "lon": 30.38,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-rama",
+    "name": "Raga airstrip (South Sudan edge)",
+    "kind": "strip",
+    "lat": 8.48,
+    "lon": 25.68,
+    "country": "SS",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-nyala-camp",
+    "name": "Kalma camp area",
+    "kind": "camp",
+    "lat": 12.053,
+    "lon": 24.973,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-zamzam",
+    "name": "Zamzam IDP camp",
+    "kind": "camp",
+    "lat": 13.48,
+    "lon": 25.32,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-otash",
+    "name": "Otash camp",
+    "kind": "camp",
+    "lat": 12.12,
+    "lon": 24.85,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-abushouk",
+    "name": "Abu Shouk camp",
+    "kind": "camp",
+    "lat": 13.66,
+    "lon": 25.37,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-saudi-hosp-fasher",
+    "name": "Saudi Hospital El Fasher",
+    "kind": "hospital",
+    "lat": 13.628,
+    "lon": 25.349,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-bashair",
+    "name": "Bashair teaching hospital",
+    "kind": "hospital",
+    "lat": 15.5,
+    "lon": 32.56,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-sennar-sugar",
+    "name": "Sennar sugar factory",
+    "kind": "yard",
+    "lat": 13.55,
+    "lon": 33.62,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-kenana",
+    "name": "Kenana sugar",
+    "kind": "yard",
+    "lat": 13.17,
+    "lon": 32.99,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-hafir-cashew",
+    "name": "El Obeid grain silos",
+    "kind": "yard",
+    "lat": 13.184,
+    "lon": 30.232,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-babanusa-rail",
+    "name": "Babanusa rail junction",
+    "kind": "yard",
+    "lat": 11.333,
+    "lon": 27.808,
+    "country": "SD",
+    "source": "compiled-osm"
+  },
+  {
+    "id": "osm-kufra-track",
+    "name": "Kufra desert track well",
+    "kind": "crossing",
+    "lat": 20.3,
+    "lon": 24.2,
+    "country": "LY",
+    "source": "compiled-osm"
+  }
+]
