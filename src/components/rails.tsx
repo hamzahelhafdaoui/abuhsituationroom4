@@ -21,10 +21,12 @@ import { exportBriefing, exportCsv, exportGeoJSON } from "@/lib/export";
 import { SEED_REPORTS, imageryLinks, type OsintReport } from "@/lib/osint";
 import type { Sitrep } from "@/lib/sitrep";
 import type { BriefingDoc } from "@/lib/briefing";
+import type { FuaeRecord } from "@/lib/fuae";
 import {
   AddReportForm,
   BriefPanel,
   FeedsPanel,
+  FuaePanel,
   NewsPanel,
   ReportDetail,
   ReportsList,
@@ -53,7 +55,7 @@ import { padBbox } from "@/lib/geo";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export type MobileTab = "news" | "alerts" | "sites" | "layers" | "log" | "brief";
+export type MobileTab = "news" | "alerts" | "sites" | "layers" | "log" | "brief" | "fuae";
 
 function BrowseFrame({
   date,
@@ -419,12 +421,15 @@ export function RightRail(props: {
   onOpenAnno?: (id: string) => void;
   feeds?: FeedItem[];
   feedsMeta?: LiveMeta | null;
+  fuae?: FuaeRecord[];
+  onOpenFuae?: (r: FuaeRecord) => void;
 }) {
   const {
     alerts, sites, selectedAlert, selectedSite, siteParty, siteObs, reviews,
     note, setNote, applyReview, setSelectedAlert, setSelectedSite,
     reviewFilter, setReviewFilter, overrideParty, flights, live, liveError, audit, force,
     news, newsLoading, brief, briefLoading, onRunBrief, sitrep, feeds, feedsMeta, briefingDoc, onOpenAnno,
+    fuae, onOpenFuae,
   } = props;
   const selectedReportId = useAppStore((s) => s.selectedReportId);
   const addingReport = useAppStore((s) => s.addingReport);
@@ -475,6 +480,10 @@ export function RightRail(props: {
         onOpenAnno={onOpenAnno}
       />
     );
+  }
+
+  if (force === "fuae") {
+    return <FuaePanel rows={fuae ?? []} onOpen={onOpenFuae ?? (() => {})} />;
   }
 
   if (addingReport) {
@@ -578,6 +587,8 @@ export function RightRail(props: {
       feedsMeta={feedsMeta ?? live?.feedsMeta ?? null}
       briefingDoc={briefingDoc ?? null}
       onOpenAnno={onOpenAnno}
+      fuae={fuae ?? []}
+      onOpenFuae={onOpenFuae}
     />
   );
 }
@@ -585,7 +596,7 @@ export function RightRail(props: {
 function QueueOrLog({
   alerts, reviews, reviewFilter, setReviewFilter, setSelectedAlert, setSelectedSite,
   news, newsLoading, brief, briefLoading, onRunBrief, sitrep, reports, onSelectReport, onAddReport,
-  feeds, feedsMeta, briefingDoc, onOpenAnno,
+  feeds, feedsMeta, briefingDoc, onOpenAnno, fuae, onOpenFuae,
 }: {
   alerts: typeof ALERTS;
   reviews: Record<string, { state: ReviewState; note: string; confidence: Confidence; at: string }>;
@@ -606,6 +617,8 @@ function QueueOrLog({
   feedsMeta: LiveMeta | null;
   briefingDoc: BriefingDoc | null;
   onOpenAnno?: (id: string) => void;
+  fuae: FuaeRecord[];
+  onOpenFuae?: (r: FuaeRecord) => void;
 }) {
   const rightTab = useAppStore((s) => s.rightTab);
   const setRightTab = useAppStore((s) => s.setRightTab);
@@ -614,6 +627,7 @@ function QueueOrLog({
       <div className="flex flex-wrap items-center gap-1 px-3 pt-3">
         {([
           ["news", "News"],
+          ["fuae", "FUAE"],
           ["log", "Log"],
           ["queue", "Queue"],
           ["brief", "Brief"],
@@ -635,6 +649,9 @@ function QueueOrLog({
             {label}
             {id === "news" && news?.items.length ? (
               <span className="ml-1 font-mono tabular-nums text-[10px] opacity-80">{news.items.length}</span>
+            ) : null}
+            {id === "fuae" && fuae.length ? (
+              <span className="ml-1 font-mono tabular-nums text-[10px] opacity-80">{fuae.length}</span>
             ) : null}
           </button>
         ))}
@@ -662,6 +679,8 @@ function QueueOrLog({
         <ReportsList reports={reports} onSelect={onSelectReport} onAdd={onAddReport} />
       ) : rightTab === "feeds" ? (
         <FeedsPanel items={feeds} meta={feedsMeta} />
+      ) : rightTab === "fuae" ? (
+        <FuaePanel rows={fuae} onOpen={onOpenFuae ?? (() => {})} />
       ) : (
         <ul className="flex-1 overflow-y-auto px-3 py-2">
           {alerts.length === 0 ? (

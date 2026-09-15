@@ -29,6 +29,24 @@ export const SEA_LANES: { id: string; name: string; coords: [number, number][] }
     ],
   },
   {
+    id: "lane-uae-africa",
+    name: "UAE–Horn / Red Sea",
+    coords: [
+      [55.03, 24.98],
+      [56.5, 25.2],
+      [57.4, 23.4],
+      [58.2, 20.0],
+      [54.0, 14.4],
+      [51.2, 11.6],
+      [48.9, 11.8],
+      [43.3, 12.55],
+      [42.55, 13.4],
+      [38.9, 16.4],
+      [37.22, 21.4],
+      [37.28, 19.62],
+    ],
+  },
+  {
     id: "lane-suez-med",
     name: "Suez approaches",
     coords: [
@@ -77,7 +95,7 @@ export function laneVessels(now = Date.now()): VesselEvent[] {
   const t0 = now / 1000;
   const out: VesselEvent[] = [];
   for (const lane of SEA_LANES) {
-    const n = lane.id === "lane-red-sea" ? 8 : 4;
+    const n = lane.id === "lane-red-sea" ? 8 : lane.id === "lane-uae-africa" ? 6 : 4;
     for (let i = 0; i < n; i++) {
       const t = t0 * 0.0034 + i / n;
       const p = along(lane.coords, t);
@@ -86,7 +104,7 @@ export function laneVessels(now = Date.now()): VesselEvent[] {
         name: `${lane.name} · ${i + 1}`,
         lat: p.lat,
         lon: p.lon,
-        flag: "unknown",
+        flag: lane.id === "lane-uae-africa" ? "are" : "unknown",
         kind: "lane",
         sog: 14,
         cog: p.cog,

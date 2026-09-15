@@ -47,8 +47,8 @@ export const REGIONAL_WATCH: WatchBox[] = [
     south: 9.6,
     east: 37.8,
     north: 14.6,
-    priority: "border",
-    notes: "Asosa, Gondar, Metema, Humera — Blue Nile and Gallabat approaches.",
+    priority: "primary",
+    notes: "Asosa, Gondar, Metema, Humera — Blue Nile and Gallabat approaches. Hunt non-army pads and cargo-typical airframes, not ENDF IDs.",
   },
   {
     id: "wb-somalia-north",
@@ -80,8 +80,8 @@ export const REGIONAL_WATCH: WatchBox[] = [
     south: 12.6,
     east: 22.6,
     north: 16.4,
-    priority: "border",
-    notes: "Abéché, Adré, Tine. Humanitarian traffic is the civilian baseline.",
+    priority: "primary",
+    notes: "Abéché, Adré, Tine, Amdjarass. Humanitarian traffic is the civilian baseline. Non-army pads are review cues, not Chadian army IDs.",
   },
   {
     id: "wb-libya-kufra",

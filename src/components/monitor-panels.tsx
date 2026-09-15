@@ -6,6 +6,9 @@ import type { Sitrep } from "@/lib/sitrep";
 import type { BriefingDoc } from "@/lib/briefing";
 import { CHANNEL_TONE, FEED_CHANNELS } from "@/lib/warroom-data";
 import { CONFIDENCE_RUBRIC, PARTY_LABEL, type AiBrief, type Confidence, type FeedItem, type LiveMeta, type NewsFeed, type Party } from "@/lib/types";
+import { DETECT_KLASS, type DetectHit, type DetectReport } from "@/lib/imagery-detect";
+import { HUNTS, type HuntId } from "@/lib/hunt";
+import type { FuaeRecord } from "@/lib/fuae";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -57,6 +60,59 @@ export function NewsPanel({ data, loading }: { data: NewsFeed | null; loading: b
                 <ExternalLink className="mt-0.5 size-3 shrink-0 text-subtle" />
               </span>
             </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export function FuaePanel({
+  rows,
+  onOpen,
+}: {
+  rows: FuaeRecord[];
+  onOpen: (r: FuaeRecord) => void;
+}) {
+  const air = rows.filter((r) => r.kind === "air");
+  const sea = rows.filter((r) => r.kind === "sea");
+  return (
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3">
+      <div className="mb-1 flex items-baseline justify-between gap-2">
+        <h2 className="text-xs font-medium uppercase tracking-wider text-subtle">FUAE</h2>
+        <span className="font-mono text-[11px] tabular-nums text-muted">
+          {air.length} air · {sea.length} sea
+        </span>
+      </div>
+      <p className="text-[11px] leading-snug text-subtle">
+        UAE-linked ADS-B and documented UAE–Horn / Red Sea contacts. Route observation from public tracking — not a cargo, weapons, or transfer claim.
+      </p>
+      {rows.length === 0 ? (
+        <p className="mt-6 text-center text-sm text-muted">
+          No UAE→Africa contacts this cycle. ADS-B over the desert is a coverage gap, not a negative.
+        </p>
+      ) : null}
+      <ul className="mt-3 space-y-1.5">
+        {rows.map((r) => (
+          <li key={r.id}>
+            <button
+              type="button"
+              onClick={() => onOpen(r)}
+              className="flex w-full flex-col gap-1 rounded-xl border border-border bg-surface/60 p-3 text-left hover:bg-raised"
+            >
+              <span className="flex items-center justify-between gap-2 text-[11px] text-subtle">
+                <span className={r.kind === "air" ? "text-thermal" : "text-accent"}>
+                  {r.kind === "air" ? "AIR" : "SEA"}
+                  {r.live ? " · LIVE" : " · archive"}
+                </span>
+                <span className="font-mono">{r.lastSeen.slice(11, 16)}Z</span>
+              </span>
+              <span className="text-sm leading-snug">{r.title}</span>
+              <span className="text-[11px] text-muted">
+                {r.origin} → {r.dest}
+              </span>
+              <span className="text-[11px] leading-snug text-subtle">{r.why}</span>
+            </button>
           </li>
         ))}
       </ul>
@@ -684,6 +740,103 @@ export function ControlLegend({ open, onToggle }: { open: boolean; onToggle: () 
           </ul>
         </>
       ) : null}
+    </div>
+  );
+}
+
+export function DetectPanel({
+  report,
+  loading,
+  onOpen,
+}: {
+  report: DetectReport | null;
+  loading: boolean;
+  onOpen: (hit: DetectHit) => void;
+}) {
+  const [filter, setFilter] = useState<HuntId | "all">("all");
+  const hits = report?.hits ?? [];
+  const counts = Object.fromEntries(
+    HUNTS.map((h) => [h.id, hits.filter((x) => x.hunts?.includes(h.id)).length]),
+  ) as Record<HuntId, number>;
+  const shown = hits.filter((h) => filter === "all" || h.hunts?.includes(filter));
+  const ranked = [...shown].sort((a, b) => {
+    const w = (h: DetectHit) =>
+      (h.hunts?.includes("bda") ? 4 : 0) +
+      (h.hunts?.includes("irreg") ? 3 : 0) +
+      (h.hunts?.includes("cargo") || h.hunts?.includes("sea") ? 2 : 0) +
+      h.confidence;
+    return w(b) - w(a);
+  });
+  return (
+    <div className="hud-panel pointer-events-auto mt-2 w-72 max-w-[86vw] overflow-hidden">
+      <div className="flex items-center justify-between px-2.5 py-2">
+        <p className="text-xs font-medium">Auto-find</p>
+        <span className="font-mono text-[11px] tabular-nums text-subtle">
+          {loading ? "…" : `${shown.length}/${hits.length}`}
+        </span>
+      </div>
+      <p className="border-t border-border px-2.5 py-1.5 text-[10px] leading-snug text-subtle">
+        {report?.note ??
+          "GEOINT desk — BDA, cargo, air, sea, vehicles, pads, berms, POL, camps, crossings. Candidates, not IDs."}
+      </p>
+      <div className="flex flex-wrap gap-0.5 px-2 pb-2">
+        <button
+          type="button"
+          onClick={() => setFilter("all")}
+          className={cn(
+            "rounded-sm px-1 py-0.5 font-mono text-[9px] tracking-wide",
+            filter === "all" ? "bg-raised text-fg" : "text-muted hover:text-fg",
+          )}
+        >
+          ALL
+        </button>
+        {HUNTS.map((h) => (
+          <button
+            key={h.id}
+            type="button"
+            title={h.look}
+            onClick={() => setFilter(filter === h.id ? "all" : h.id)}
+            className={cn(
+              "rounded-sm px-1 py-0.5 font-mono text-[9px] tracking-wide",
+              filter === h.id ? "bg-raised text-fg" : "text-muted hover:text-fg",
+            )}
+          >
+            {h.short}
+            {counts[h.id] ? ` ${counts[h.id]}` : ""}
+          </button>
+        ))}
+      </div>
+      <ul className="max-h-64 overflow-y-auto border-t border-border">
+        {shown.length === 0 && !loading ? (
+          <li className="px-2.5 py-2 text-[11px] text-muted">No candidates this cycle.</li>
+        ) : (
+          ranked.slice(0, 24).map((h) => {
+            const meta = DETECT_KLASS[h.klass];
+            return (
+              <li key={h.id}>
+                <button
+                  type="button"
+                  onClick={() => onOpen(h)}
+                  className="flex w-full items-start gap-2 px-2.5 py-1.5 text-left hover:bg-raised"
+                >
+                  <span
+                    className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-sm"
+                    style={{ background: meta.color }}
+                  />
+                  <span className="min-w-0">
+                    <span className="block truncate text-[11px] text-fg">{h.title}</span>
+                    <span className="font-mono text-[10px] text-subtle">
+                      {meta.short} · c{h.confidence}
+                      {h.change != null ? ` · Δ${h.change}` : ""}
+                      {h.cloud !== "unknown" ? ` · ${h.cloud}` : ""}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            );
+          })
+        )}
+      </ul>
     </div>
   );
 }

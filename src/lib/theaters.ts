@@ -77,6 +77,7 @@ export const THEATERS: Theater[] = [
     notes: "Blue Nile / Benishangul approaches, Asosa, Metema, Humera.",
     jumps: [
       { id: "haso", label: "Asosa" },
+      { id: "menge", label: "Menge" },
       { id: "habd", label: "Bahir Dar" },
       { id: "hang", label: "Gondar" },
       { id: "metema", label: "Metema" },
@@ -116,6 +117,7 @@ export const THEATERS: Theater[] = [
       { id: "fttj", label: "N'Djamena" },
       { id: "ftty", label: "Abéché" },
       { id: "adre", label: "Adré" },
+      { id: "amdjarass", label: "Amdjarass" },
       { id: "tine", label: "Tine" },
       { id: "faya", label: "Faya" },
     ],

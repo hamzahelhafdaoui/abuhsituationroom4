@@ -108,6 +108,29 @@ function Methods() {
         <li>High-res or ground media + multi-date satellite + reporting + movement chain.</li>
       </ol>
 
+      <h2>Automated finding (DET)</h2>
+      <p>
+        The DET toggle runs a civilian chip pipeline adapted from the public playbook{" "}
+        <a href="https://github.com/satellite-image-deep-learning/techniques" target="_blank" rel="noopener noreferrer">
+          satellite-image-deep-learning/techniques
+        </a>
+        — tiling, image-quality and cloud gates, co-registered bitemporal difference, RGB stand-ins for
+        NDVI/NBR, OSM weak labels, xView2-style damage <em>bins</em> (not classes), multimodal fusion
+        with FIRMS, ADS-B, AIS-typical shipping, news/GDELT wire cues, and a plain-language explanation
+        on every box. The hunt list is a GEOINT desk: BDA, cargo, air, sea, vehicle parks, compounds,
+        non-army pads, earthworks, POL, camps, crossings, desert tracks, foreign-linked nodes, OSM gaps.
+        We do not load YOLO,
+        mmrotate, U-Net, Prithvi, or Clay weights; those need a GPU and still would only produce
+        candidates. Default confidence is 1–2. A box is an observation, not an identification.
+      </p>
+      <p>
+        Resolution gate: HLS is ~30 m. Compact bright pixels are labelled unresolved objects, never
+        a vehicle or aircraft census. High-res Esri is morphology only and is not a dated scene.
+        Sentinel-1 SAR is not in this sweep — clouded Darfur is a coverage gap, not a negative.
+        Agricultural FIRMS is negative evidence. Confirm / reject / needs-imagery is the
+        active-learning loop.
+      </p>
+
       <h2>Reproducibility</h2>
       <p>
         Each observation stores sensor, scene ID, time, cloud percentage, notes, indicator

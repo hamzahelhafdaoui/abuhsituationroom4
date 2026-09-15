@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, CircleHelp, ClipboardList, FileText, Layers, Map as MapIcon, Minus, Newspaper, Plus, RefreshCw, Ruler, Search, Shield } from "lucide-react";
+import { AlertTriangle, CircleHelp, ClipboardList, FileText, Layers, Minus, Newspaper, PanelRight, Plane, Plus, RefreshCw, Ruler, Search, Shield } from "lucide-react";
 import { ALERTS, FLIGHTS, OBSERVATIONS, SITES } from "@/data/catalog";
 import { VESSEL_SEED } from "@/data/regional-sites";
 import { ingestLive } from "@/lib/changelog";
@@ -9,42 +9,20 @@ import { getNewsFeed } from "@/lib/news";
 import { generateAiBrief } from "@/lib/ai-brief";
 import { compileSitrep, type Sitrep } from "@/lib/sitrep";
 import { composeBriefing } from "@/lib/briefing";
+import { fuseDetect, runDetect, type DetectReport } from "@/lib/imagery-detect";
 import { allVessels, mergeFlights } from "@/lib/traffic";
+import { scanFuae, seedFuae, type FuaeRecord } from "@/lib/fuae";
 import { SEED_REPORTS } from "@/lib/osint";
 import { GDELT_ARCHIVE, OSM_SEED, FEED_SEED } from "@/lib/warroom-data";
 import { THEATER_BY_ID, THEATERS } from "@/lib/theaters";
-import { IMAGERY, siteInKindGroup, type AiBrief, type FlightEvent, type LiveBundle, type LiveMeta, type ReviewState, type ThermalEvent } from "@/lib/types";
+import { IMAGERY, siteInKindGroup, type AiBrief, type FlightEvent, type LiveBundle, type ReviewState, type ThermalEvent } from "@/lib/types";
 import { useAppStore, useVisibleBoxes } from "@/lib/store";
 import { cn, daysAgo, mapCommand, mapFit, mapMeasure } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { MapCanvas } from "@/components/map-canvas";
 import { LeftRail, RightRail, type MobileTab } from "@/components/rails";
-import { ControlLegend } from "@/components/monitor-panels";
+import { ControlLegend, DetectPanel } from "@/components/monitor-panels";
 import { ClassificationBar, ClockChip, SensorBar, SitroomFx } from "@/components/hud-overlay";
-import { BasemapPicker, LayerStack, LiveStrip } from "@/components/map-chrome";
-
-function Ticker({ items }: { items: { source: string; title: string; url: string }[] }) {
-  if (items.length === 0) return null;
-  const loop = [...items, ...items];
-  return (
-    <div className="hud-panel pointer-events-auto mt-2 hidden overflow-hidden md:block">
-      <div className="ticker-track">
-        {loop.map((h, i) => (
-          <a
-            key={`${h.url}-${i}`}
-            href={h.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ticker-item"
-          >
-            <span className="text-saf">{h.source}</span>
-            <span>{h.title}</span>
-          </a>
-        ))}
-      </div>
-    </div>
-  );
-}
+import { BasemapPicker, LayerStack } from "@/components/map-chrome";
 
 const JUMP = [
   { id: "hsss", label: "Khartoum" },
@@ -58,25 +36,9 @@ const JUMP = [
   { id: "jebel-ali", label: "Jebel Ali" },
   { id: "kufra", label: "Kufra" },
   { id: "adre", label: "Adré" },
+  { id: "amdjarass", label: "Amdjarass" },
   { id: "hhas", label: "Assab" },
 ] as const;
-
-function MetaChip({ label, meta }: { label: string; meta: LiveMeta | null }) {
-  const tone =
-    meta?.status === "ok"
-      ? "text-civilian"
-      : meta?.status === "gap" || meta?.status === "stale"
-        ? "text-thermal"
-        : meta?.status === "error"
-          ? "text-damage"
-          : "text-muted";
-  return (
-    <span className={cn("font-mono text-[11px] tabular-nums", tone)}>
-      {label} {meta ? meta.status : "…"}
-      {meta?.fetchedAt ? ` · ${meta.fetchedAt.slice(11, 16)}Z` : ""}
-    </span>
-  );
-}
 
 function DateStrip({
   date,
@@ -158,8 +120,10 @@ export function Workspace() {
   const [briefLoading, setBriefLoading] = useState(false);
   const [sitrep, setSitrep] = useState<Sitrep | null>(null);
   const [newsLoading, setNewsLoading] = useState(false);
-  const [legendOpen, setLegendOpen] = useState(true);
-  const [trafficIn, setTrafficIn] = useState(20);
+  const [legendOpen, setLegendOpen] = useState(false);
+  const [deskOpen, setDeskOpen] = useState(false);
+  const [detectReport, setDetectReport] = useState<DetectReport | null>(null);
+  const [detecting, setDetecting] = useState(false);
   const customReports = useAppStore((s) => s.customReports);
   const searchRef = useRef<HTMLInputElement>(null);
   const [boxForm, setBoxForm] = useState({
@@ -201,7 +165,6 @@ export function Workspace() {
   const hideDefaultBox = useAppStore((s) => s.hideDefaultBox);
   const audit = useAppStore((s) => s.audit);
   const replaceLog = useAppStore((s) => s.replaceLog);
-  const changeLogCount = useAppStore((s) => s.changeLog.length);
   const changeLog = useAppStore((s) => s.changeLog);
   const setLastSweepAt = useAppStore((s) => s.setLastSweepAt);
   const helpOpen = useAppStore((s) => s.helpOpen);
@@ -211,6 +174,9 @@ export function Workspace() {
   const rightTab = useAppStore((s) => s.rightTab);
   const setRightTab = useAppStore((s) => s.setRightTab);
   const setFlyTarget = useAppStore((s) => s.setFlyTarget);
+  const detectOn = useAppStore((s) => s.detectOn);
+  const ingestFuae = useAppStore((s) => s.ingestFuae);
+  const fuaeLog = useAppStore((s) => s.fuaeLog);
   const boxes = useVisibleBoxes();
 
   function applyLive(b: LiveBundle, announce: boolean) {
@@ -223,6 +189,7 @@ export function Workspace() {
     setLiveError(null);
     const { next, added } = ingestLive(b, useAppStore.getState().changeLog);
     replaceLog(next);
+    ingestFuae(scanFuae(mergeFlights(b.flights), b.vessels?.length ? b.vessels : allVessels()));
     setLastSweepAt(new Date().toISOString());
     setSitrep(
       compileSitrep({
@@ -358,27 +325,37 @@ export function Workspace() {
               vesselsMeta: t.vesselsMeta,
             };
           });
-          setTrafficIn(20);
+          ingestFuae(scanFuae(mergeFlights(t.flights), t.vessels.length ? t.vessels : allVessels()));
         })
         .catch(() => {
-          if (!cancelled) setTrafficIn(20);
+          /* coverage gap is the default, not an error toast */
         });
     };
     poll();
     const id = window.setInterval(poll, 20_000);
-    const tick = window.setInterval(() => {
-      setTrafficIn((n) => (n > 0 ? n - 1 : 20));
-    }, 1000);
     return () => {
       cancelled = true;
       window.clearInterval(id);
-      window.clearInterval(tick);
     };
+  }, [ingestFuae]);
+
+  useEffect(() => {
+    const show = () => {
+      if (!useAppStore.getState().helpSeen) useAppStore.getState().setHelpOpen(true);
+    };
+    const persist = useAppStore.persist;
+    if (persist?.hasHydrated?.()) show();
+    return persist?.onFinishHydration?.(show);
   }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        if (useAppStore.getState().helpOpen) {
+          e.preventDefault();
+          setHelpOpen(false);
+          return;
+        }
         setSelectedAlert(null);
         setSelectedSite(null);
         setSearchOpen(false);
@@ -399,9 +376,14 @@ export function Workspace() {
   const gdelt = live?.gdelt?.length ? live.gdelt : GDELT_ARCHIVE;
   const osm = live?.osm?.length ? live.osm : OSM_SEED;
   const feeds = live?.feeds?.length ? live.feeds : FEED_SEED;
-  const tickerItems = live?.ticker?.length
-    ? live.ticker
-    : (live?.news ?? []).map((n) => ({ source: n.source, title: n.title, url: n.url }));
+
+  useEffect(() => {
+    if (selectedSiteId || selectedAlertId) setDeskOpen(true);
+  }, [selectedSiteId, selectedAlertId]);
+
+  useEffect(() => {
+    ingestFuae(seedFuae());
+  }, [ingestFuae]);
 
   const sites = useMemo(() => {
     return SITES.filter((s) => {
@@ -441,7 +423,7 @@ export function Workspace() {
   const selectedAlert = ALERTS.find((a) => a.id === selectedAlertId) ?? null;
   const siteObs = selectedSite ? OBSERVATIONS.filter((o) => o.siteId === selectedSite.id) : [];
   const siteParty = selectedSite ? (partyOverrides[selectedSite.id]?.party ?? selectedSite.party) : "unknown";
-  const panelOpen = Boolean(selectedSite || selectedAlert);
+  const panelOpen = deskOpen;
 
   function applyReview(state: ReviewState) {
     if (!selectedAlert) return;
@@ -492,17 +474,67 @@ export function Workspace() {
 
   const briefingOn = tab === "brief" || rightTab === "brief";
 
-  function openBrief() {
-    setTab("brief");
-    setRightTab("brief");
-    setSelectedAlert(null);
-    setSelectedSite(null);
+  const newsPoints = live?.newsPoints ?? [];
+  const firmCount = firms.length;
+  const flightCount = flights.length;
+  const newsCount = newsPoints.length;
+
+  useEffect(() => {
+    if (!detectOn) {
+      setDetectReport(null);
+      setDetecting(false);
+      return;
+    }
+    const args = {
+      boxes,
+      firms,
+      flights,
+      osm,
+      news: newsPoints,
+      date,
+      compareDate,
+      vessels,
+      gdelt,
+    };
+    const fused = fuseDetect(args);
+    setDetectReport({
+      hits: fused,
+      ranAt: new Date().toISOString(),
+      opticalTried: 0,
+      opticalOk: 0,
+      note: "Fusion (FIRMS × ADS-B × AIS × OSM × news × catalog). HLS chips scoring…",
+    });
+    setDetecting(true);
+    let cancelled = false;
+    const t = window.setTimeout(() => {
+      runDetect({ ...args, optical: true }).then((r) => {
+        if (!cancelled) {
+          setDetectReport(r);
+          setDetecting(false);
+        }
+      });
+    }, 600);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detectOn, date, compareDate, firmCount, flightCount, newsCount, boxes.length, vessels.length, gdelt.length]);
+
+  function openDesk(tabId: typeof rightTab = rightTab) {
+    setDeskOpen(true);
+    setRightTab(tabId);
   }
 
   function openAnno(id: string) {
     const a = briefingDoc?.annotations.find((x) => x.id === id);
     if (!a) return;
     setFlyTarget({ lat: a.lat, lon: a.lon, zoom: 8.2, label: a.title });
+  }
+
+  function openDetect(hit: { lat: number; lon: number; siteId?: string; title: string }) {
+    setFlyTarget({ lat: hit.lat, lon: hit.lon, zoom: 11.2, label: hit.title });
+    if (hit.siteId) setSelectedSite(hit.siteId);
   }
 
   function pickMobile(id: MobileTab) {
@@ -515,8 +547,8 @@ export function Workspace() {
       setRightTab("news");
     } else if (id === "alerts") {
       setRightTab("queue");
-    } else if (id === "log") {
-      setRightTab("log");
+    } else if (id === "fuae") {
+      setRightTab("fuae");
     } else if (rightTab === "brief") {
       setRightTab("news");
     }
@@ -543,6 +575,12 @@ export function Workspace() {
     onOpenAnno: openAnno,
     feeds,
     feedsMeta: live?.feedsMeta ?? null,
+    fuae: fuaeLog,
+    onOpenFuae: (r: FuaeRecord) => {
+      setFlyTarget({ lat: r.lat, lon: r.lon, zoom: 7.4, label: r.title });
+      setDeskOpen(true);
+      setRightTab("fuae");
+    },
   };
 
   return (
@@ -560,6 +598,8 @@ export function Workspace() {
         vessels={vessels}
         briefingOn={briefingOn}
         annotations={briefingOn ? (briefingDoc?.annotations ?? []) : []}
+        detections={detectOn ? (detectReport?.hits ?? []) : []}
+        fuae={fuaeLog}
       />
 
       <SitroomFx />
@@ -646,10 +686,22 @@ export function Workspace() {
             <div className="hud-panel hidden items-center gap-1 p-1 lg:flex">
               <button
                 type="button"
-                onClick={openBrief}
+                onClick={() => setDeskOpen((v) => !v)}
+                className={cn(
+                  "rounded-sm px-2.5 py-2 font-mono text-[10px] tracking-wider hover:bg-raised",
+                  deskOpen ? "bg-accent text-accent-fg" : "text-muted hover:text-fg",
+                )}
+              >
+                DOCS
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  openDesk("fuae");
+                }}
                 className="rounded-sm px-2.5 py-2 font-mono text-[10px] tracking-wider text-muted hover:bg-raised hover:text-fg"
               >
-                BRIEF
+                FUAE{fuaeLog.length ? ` ${fuaeLog.length}` : ""}
               </button>
               <Link to="/methods" className="rounded-sm px-2.5 py-2 font-mono text-[10px] tracking-wider text-muted hover:bg-raised hover:text-fg">METHODS</Link>
               <Link to="/ethics" className="rounded-sm px-2.5 py-2 font-mono text-[10px] tracking-wider text-muted hover:bg-raised hover:text-fg">ETHICS</Link>
@@ -657,21 +709,6 @@ export function Workspace() {
               <Link to="/flyer" className="rounded-sm px-2.5 py-2 font-mono text-[10px] tracking-wider text-muted hover:bg-raised hover:text-fg">FLYER</Link>
             </div>
           </nav>
-        </div>
-
-        <Ticker items={tickerItems} />
-
-        <div className="mt-2 hidden md:block">
-          <LiveStrip
-            headlines={live?.news.length ?? 0}
-            fires={firms.length}
-            flights={flights.length}
-            vessels={vessels.length}
-            meta={live?.newsMeta ?? live?.flightsMeta ?? null}
-            nextSec={trafficIn}
-            onRefresh={sweepNow}
-            sweeping={sweeping}
-          />
         </div>
 
         <div className="mt-2 flex items-start gap-2">
@@ -715,20 +752,10 @@ export function Workspace() {
               </button>
             ))}
           </div>
-          <div className="hud-panel pointer-events-auto ml-auto hidden items-center gap-3 px-3 py-1.5 xl:flex">
-            <span className="font-mono text-[11px] tabular-nums text-muted">
-              {SITES.length + osm.length} pins · {vessels.length} maritime · {changeLogCount} records
-            </span>
-            <MetaChip label="FIRMS" meta={live?.firmsMeta ?? null} />
-            <MetaChip label="ADS-B" meta={live?.flightsMeta ?? null} />
-            <MetaChip label="AIS" meta={live?.vesselsMeta ?? null} />
-            <MetaChip label="OSM" meta={live?.osmMeta ?? null} />
-            <Badge className="border-damage/40 text-damage">DOCS ONLY</Badge>
-          </div>
         </div>
       </div>
 
-      <div className="pointer-events-none absolute right-3 top-[13.5rem] z-20 md:top-[16.5rem] lg:right-[26.2rem]">
+      <div className={cn("pointer-events-none absolute right-3 top-[11.5rem] z-20 md:top-[13.5rem]", deskOpen && "lg:right-[26.2rem]")}>
         <LayerStack
           counts={{
             ai: aiEvents.length,
@@ -742,7 +769,7 @@ export function Workspace() {
         />
       </div>
 
-      <div className="pointer-events-none absolute bottom-24 left-3 top-[16.5rem] z-20 hidden w-60 md:block">
+      <div className="pointer-events-none absolute bottom-24 left-3 top-[14rem] z-20 hidden w-60 md:block">
         <div className="pointer-events-auto mb-2 flex flex-wrap items-center gap-1">
           <button
             type="button"
@@ -800,15 +827,41 @@ export function Workspace() {
           </div>
         ) : null}
         <div className="pointer-events-auto mt-auto">
-          <ControlLegend open={legendOpen} onToggle={() => setLegendOpen((v) => !v)} />
+          {imagery === "dark" ? (
+            <ControlLegend open={legendOpen} onToggle={() => setLegendOpen((v) => !v)} />
+          ) : null}
+          {detectOn ? (
+            <DetectPanel report={detectReport} loading={detecting} onOpen={openDetect} />
+          ) : null}
         </div>
       </div>
 
-      <div className="pointer-events-none absolute bottom-24 right-3 top-[16.5rem] z-20 hidden w-[24.5rem] lg:block">
-        <div className="hud-panel pointer-events-auto flex h-full flex-col overflow-hidden">
-          <RightRail {...rightProps} />
+      {deskOpen ? (
+        <div className="pointer-events-none absolute bottom-24 right-3 top-[14rem] z-20 hidden w-[24.5rem] lg:block">
+          <div className="hud-panel pointer-events-auto flex h-full flex-col overflow-hidden">
+            <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-2">
+              <span className="font-mono text-[10px] tracking-wider text-muted">DOCS</span>
+              <button
+                type="button"
+                className="text-xs text-muted hover:text-fg"
+                onClick={() => setDeskOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+            <RightRail {...rightProps} />
+          </div>
         </div>
-      </div>
+      ) : (
+        <button
+          type="button"
+          className="pointer-events-auto absolute bottom-28 right-3 z-20 hidden h-11 items-center gap-2 rounded-full border border-border bg-bg/85 px-4 text-xs text-fg lg:flex"
+          onClick={() => openDesk("news")}
+        >
+          <PanelRight className="size-3.5" />
+          Open docs
+        </button>
+      )}
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 hidden p-3 md:block">
         <div className="pointer-events-auto mx-auto max-w-5xl">
@@ -832,10 +885,10 @@ export function Workspace() {
         <div className="flex shrink-0 items-center gap-0.5 border-t border-border bg-bg px-1 py-1.5">
           {([
             ["news", "News", Newspaper],
+            ["fuae", "FUAE", Plane],
             ["log", "Log", FileText],
             ["alerts", "Queue", AlertTriangle],
             ["brief", "Brief", ClipboardList],
-            ["sites", "Sites", MapIcon],
             ["layers", "Layers", Layers],
           ] as const).map(([id, label, Icon]) => (
             <button
@@ -855,45 +908,63 @@ export function Workspace() {
       </div>
 
       {helpOpen ? (
-        <div className="absolute inset-0 z-40 flex items-center justify-center bg-bg/70 p-4">
-          <div className="hud-panel max-h-[90dvh] w-full max-w-lg overflow-y-auto p-5">
-            <p className="text-xs uppercase tracking-widest text-subtle">How this works</p>
-            <h2 className="mt-1 font-mono text-xl font-medium tracking-tight">Abu Hureirah Situation Room</h2>
-            <p className="mt-1 font-mono text-[11px] tracking-widest text-accent">SUDAN WING</p>
-            <ol className="mt-4 list-decimal space-y-3 pl-5 text-sm leading-relaxed text-muted">
+        <div
+          className="pointer-events-auto absolute inset-0 z-50 flex items-center justify-center bg-bg/80 p-3"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="help-title"
+          onClick={() => setHelpOpen(false)}
+          onPointerDown={(e) => {
+            if (e.target === e.currentTarget) setHelpOpen(false);
+          }}
+        >
+          <div
+            className="hud-panel flex max-h-[min(90dvh,36rem)] w-full max-w-lg flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            <div className="shrink-0 px-5 pt-5">
+              <p className="text-xs uppercase tracking-widest text-subtle">How this works</p>
+              <h2 id="help-title" className="mt-1 font-mono text-xl font-medium tracking-tight">
+                Abu Hureirah Situation Room
+              </h2>
+              <p className="mt-1 font-mono text-[11px] tracking-widest text-accent">SUDAN WING</p>
+            </div>
+            <ol className="min-h-0 flex-1 list-decimal space-y-3 overflow-y-auto px-5 py-4 pl-10 text-sm leading-relaxed text-muted">
               <li>
                 <span className="text-fg">Theater chips</span> jump Sudan, Egypt, Ethiopia, Somalia, Chad, Libya, UAE, Eritrea, and the Red Sea corridor. Pins are public sites — bases, yards, ports, crossings — not occupancy.
               </li>
               <li>
-                <span className="text-fg">H</span> toggles the HUD overlay. <span className="text-fg">D</span> toggles detection boxes when you are zoomed in. Use the basemap picker for real satellite looks — Esri, Sentinel-2, VIIRS, Dark context.
+                <span className="text-fg">H</span> toggles the HUD overlay. <span className="text-fg">D</span> / <span className="text-fg">DET</span> runs the GEOINT hunt: BDA, cargo, air, sea, vehicles, pads, berms, POL, camps, crossings, tracks, foreign-linked nodes. Boxes are candidates for review — not identifications. Use the basemap picker for real satellite looks.
               </li>
               <li>
                 <span className="text-fg">Contacts</span> are live ADS-B plus maritime lane markers that crawl along documented Red Sea / Aden / Suez corridors. Cargo-typical airframes paint amber. Lane markers are NOT live AIS — they move so the maritime picture is not frozen.
               </li>
               <li>
-                <span className="text-fg">News</span> is the front tab — live headlines on open, not buried under Log. Brief is still a bottom tab and compiles the fourteen-section assessment overlay.
+                <span className="text-fg">DOCS</span> opens the news / FUAE / log / brief drawer. It is closed by default so the satellite is not covered. <span className="text-fg">FUAE</span> logs UAE-linked ADS-B and documented UAE–Horn / Red Sea contacts — route observation, not a cargo claim.
               </li>
               <li>
-                <span className="text-fg">Basemap picker</span> sits top-left on the map: High-res Esri, Sentinel-2 10 m, VIIRS daily, Dark context (phosphor), dated HLS. Control polygons stay on: SAF cyan, RSF rust, Kordofan gold dashed.
+                <span className="text-fg">Basemap picker</span> sits top-left: High-res Esri, Sentinel-2 10 m, VIIRS daily, Dark context, dated HLS. Control shading (SAF cyan / RSF rust / Kordofan gold) is only on the dark map, not on satellite.
               </li>
               <li>
                 Documentation archive only. No targeting, fire control, or kill-chain language. Public data.
               </li>
             </ol>
-            <p className="mt-4 text-xs leading-relaxed text-subtle">
-              Documentation archive only. No targeting, fire control, or kill-chain language. Public data.
-            </p>
-            <div className="mt-4 grid grid-cols-2 gap-2">
+            <div className="grid shrink-0 grid-cols-2 gap-2 border-t border-border p-4">
               <button
                 type="button"
-                className="h-11 rounded-xl bg-accent text-sm font-medium text-accent-fg"
+                className="h-12 rounded-xl bg-accent text-sm font-medium text-accent-fg"
                 onClick={() => setHelpOpen(false)}
+                onPointerUp={(e) => {
+                  e.preventDefault();
+                  setHelpOpen(false);
+                }}
               >
                 Got it — open the map
               </button>
               <Link
                 to="/flyer"
-                className="flex h-11 items-center justify-center rounded-xl border border-border text-sm text-muted hover:text-fg"
+                className="flex h-12 items-center justify-center rounded-xl border border-border text-sm text-muted hover:text-fg"
               >
                 Flyer / icon copy
               </Link>
@@ -903,7 +974,10 @@ export function Workspace() {
       ) : (
         <button
           type="button"
-          className="pointer-events-auto absolute bottom-28 right-[26rem] z-20 hidden size-10 items-center justify-center rounded-full border border-border bg-bg/80 text-muted hover:text-fg lg:flex"
+          className={cn(
+            "pointer-events-auto absolute bottom-40 z-20 hidden size-10 items-center justify-center rounded-full border border-border bg-bg/80 text-muted hover:text-fg lg:flex",
+            deskOpen ? "right-[26.2rem]" : "right-3",
+          )}
           aria-label="How this works"
           onClick={() => setHelpOpen(true)}
         >

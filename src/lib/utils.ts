@@ -78,6 +78,7 @@ export function snapshotUrl(
   date: string,
   bbox: { west: number; south: number; east: number; north: number },
   layer = "VIIRS_NOAA20_CorrectedReflectance_TrueColor",
+  size = 768,
 ): string {
   const { west, south, east, north } = bbox;
   const png = layer.includes("HLS");
@@ -88,8 +89,8 @@ export function snapshotUrl(
     LAYERS: layer,
     CRS: "EPSG:4326",
     BBOX: `${south},${west},${north},${east}`,
-    WIDTH: "768",
-    HEIGHT: "768",
+    WIDTH: String(size),
+    HEIGHT: String(size),
     FORMAT: png ? "image/png" : "image/jpeg",
     TIME: date,
     STYLES: "",

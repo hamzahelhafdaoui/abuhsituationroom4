@@ -64,6 +64,7 @@ export function SensorBar() {
       </button>
       <button
         type="button"
+        title="Auto-find: BDA, cargo, air, sea, vehicles, pads, berms, POL, camps, crossings, tracks, FX. Candidates — not IDs."
         onClick={() => setDetectOn(!detectOn)}
         className={cn(
           "h-8 rounded-sm px-2 font-mono text-[10px] tracking-wider",

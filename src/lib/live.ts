@@ -211,6 +211,23 @@ interface RawAc {
   category?: string;
 }
 
+function inferRoute(ac: RawAc, lat: number, lon: number, track?: number): { origin: string; dest: string } {
+  const near = nearestAirfieldName(lat, lon);
+  const call = (ac.flight || "").trim();
+  const inUaeBox = lat >= 22.45 && lat <= 26.55 && lon >= 51.35 && lon <= 56.65;
+  const inAfricaBox = !inUaeBox && lat >= -1.2 && lat <= 32.8 && lon >= 9.5 && lon <= 51.5;
+  const origin = inUaeBox
+    ? (near.startsWith("none") ? "UAE FIR" : near)
+    : /^A6-/i.test(ac.r || "")
+      ? "UAE registry (position not in UAE FIR)"
+      : "unreconstructed";
+  let dest = "unreconstructed";
+  if (inAfricaBox && (inUaeBox || origin !== "unreconstructed")) dest = near.startsWith("none") ? "African airspace" : near;
+  if (inUaeBox && track != null && track >= 170 && track <= 310) dest = "west/southwest of UAE (Africa heading)";
+  if (/\b(ETD|UAE|FDB)\b/i.test(call) && inAfricaBox) dest = near;
+  return { origin, dest };
+}
+
 function toFlight(ac: RawAc, source: string): FlightEvent | null {
   const lat = Number(ac.lat);
   const lon = Number(ac.lon);
@@ -220,6 +237,7 @@ function toFlight(ac: RawAc, source: string): FlightEvent | null {
   const callsign = (ac.flight || "").trim();
   const alt = typeof ac.alt_baro === "number" ? ac.alt_baro : Number(ac.alt_baro);
   const now = new Date().toISOString();
+  const route = inferRoute(ac, lat, lon, ac.track);
   return {
     id: `live-fl-${(ac.hex || `${lat}-${lon}`).toLowerCase()}`,
     hex: (ac.hex || "unknown").toLowerCase(),
@@ -227,8 +245,8 @@ function toFlight(ac: RawAc, source: string): FlightEvent | null {
     typeCode,
     operator: callsign || "unknown",
     category,
-    origin: "unreconstructed",
-    dest: "unreconstructed",
+    origin: route.origin,
+    dest: route.dest,
     firstSeen: now,
     lastSeen: now,
     lat,
@@ -296,7 +314,9 @@ async function pullFlights(): Promise<{ rows: FlightEvent[]; meta: LiveMeta }> {
     [30.1, 31.4, 280],
     [24.2, 23.3, 300],
     [12.1, 15.0, 260],
-    [24.45, 54.65, 220],
+    [24.45, 54.65, 280],
+    [25.25, 55.36, 220],
+    [25.11, 56.33, 180],
     [2.03, 45.32, 260],
     [10.4, 44.94, 220],
     [13.07, 42.65, 220],

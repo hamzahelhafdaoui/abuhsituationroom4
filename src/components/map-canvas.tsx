@@ -4,6 +4,8 @@ import { SITES } from "@/data/catalog";
 import { FACTION_META, type OsintReport } from "@/lib/osint";
 import { controlZonesFor, isUsefulOsm, mergedControlCities } from "@/lib/control";
 import { circlePoly, type BriefAnno } from "@/lib/briefing";
+import { DETECT_KLASS, type DetectHit } from "@/lib/imagery-detect";
+import type { FuaeRecord } from "@/lib/fuae";
 import { CORRIDORS, THEATER_BY_ID } from "@/lib/theaters";
 import { SEA_LANES, allVessels, deadReckon } from "@/lib/traffic";
 import {
@@ -74,7 +76,7 @@ function vis(imagery: ImagerySource, id: "hls" | "viirs" | "s2cloudless" | "esri
 }
 
 function hudPad(panelOpen: boolean) {
-  return { top: 220, right: panelOpen ? 420 : 72, bottom: 108, left: 16 };
+  return { top: 132, right: panelOpen ? 420 : 16, bottom: 88, left: 16 };
 }
 
 function canvasIcon(draw: (ctx: CanvasRenderingContext2D, s: number) => void, size = 64): ImageData {
@@ -278,6 +280,48 @@ function boxFc(boxes: WatchBox[]): FC {
   };
 }
 
+function detectFc(hits: DetectHit[]): FC {
+  return {
+    type: "FeatureCollection",
+    features: hits.flatMap((h) => {
+      const color = DETECT_KLASS[h.klass].color;
+      const ring: [number, number][] = [
+        [h.west, h.south],
+        [h.east, h.south],
+        [h.east, h.north],
+        [h.west, h.north],
+        [h.west, h.south],
+      ];
+      return [
+        {
+          type: "Feature" as const,
+          properties: {
+            id: h.id,
+            title: h.title,
+            klass: DETECT_KLASS[h.klass].short,
+            body: h.body,
+            color,
+            siteId: h.siteId ?? "",
+          },
+          geometry: { type: "Polygon" as const, coordinates: [ring] },
+        },
+        {
+          type: "Feature" as const,
+          properties: {
+            id: h.id,
+            title: h.title,
+            klass: DETECT_KLASS[h.klass].short,
+            body: h.body,
+            color,
+            siteId: h.siteId ?? "",
+          },
+          geometry: { type: "Point" as const, coordinates: [h.lon, h.lat] },
+        },
+      ];
+    }),
+  };
+}
+
 function siteFc(partyOf: (id: string) => string, kindFilter = "all"): FC {
   return {
     type: "FeatureCollection",
@@ -382,10 +426,12 @@ interface Props {
   vessels?: VesselEvent[];
   briefingOn?: boolean;
   annotations?: BriefAnno[];
+  detections?: DetectHit[];
+  fuae?: FuaeRecord[];
 }
 
 export function MapCanvas({
-  boxes, firms, flights, panelOpen = false, reports = [], newsPoints = [], aiEvents = [], gdelt = [], osm = [], vessels = [], briefingOn = false, annotations = [],
+  boxes, firms, flights, panelOpen = false, reports = [], newsPoints = [], aiEvents = [], gdelt = [], osm = [], vessels = [], briefingOn = false, annotations = [], detections = [], fuae = [],
 }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const wrap = useRef<HTMLDivElement>(null);
@@ -411,6 +457,7 @@ export function MapCanvas({
   const flyTarget = useAppStore((s) => s.flyTarget);
   const setFlyTarget = useAppStore((s) => s.setFlyTarget);
   const controlUpdates = useAppStore((s) => s.controlUpdates);
+  const detectOn = useAppStore((s) => s.detectOn);
 
   useEffect(() => {
     if (!host.current) return;
@@ -546,7 +593,7 @@ export function MapCanvas({
           source: "control",
           paint: {
             "fill-color": ["match", ["get", "faction"], "saf", FACTION_META.saf.color, "rsf", FACTION_META.rsf.color, "splm-n", FACTION_META["splm-n"].color, FACTION_META.contested.color],
-            "fill-opacity": 0.48,
+            "fill-opacity": 0.22,
           },
         }, "sites");
         map.addLayer({
@@ -602,6 +649,56 @@ export function MapCanvas({
         map.addLayer({ id: "brief-line", type: "line", source: "brief-anno", filter: ["==", ["geometry-type"], "Polygon"], layout: { visibility: "none" }, paint: { "line-color": ["coalesce", ["get", "color"], "#d4a017"], "line-width": 1.6, "line-dasharray": [2, 1.4] } });
         map.addLayer({ id: "brief-pts", type: "circle", source: "brief-anno", filter: ["==", ["geometry-type"], "Point"], layout: { visibility: "none" }, paint: { "circle-radius": 5.5, "circle-color": ["coalesce", ["get", "color"], "#d4a017"], "circle-stroke-width": 1.5, "circle-stroke-color": "#07090b" } });
 
+        map.addSource("detections", { type: "geojson", data: detectFc([]) });
+        map.addLayer({
+          id: "detect-fill",
+          type: "fill",
+          source: "detections",
+          filter: ["==", ["geometry-type"], "Polygon"],
+          layout: { visibility: "none" },
+          paint: { "fill-color": ["coalesce", ["get", "color"], "#d4a017"], "fill-opacity": 0.16 },
+        });
+        map.addLayer({
+          id: "detect-line",
+          type: "line",
+          source: "detections",
+          filter: ["==", ["geometry-type"], "Polygon"],
+          layout: { visibility: "none" },
+          paint: { "line-color": ["coalesce", ["get", "color"], "#d4a017"], "line-width": 1.8, "line-dasharray": [2, 1.2] },
+        });
+        map.addLayer({
+          id: "detect-pts",
+          type: "circle",
+          source: "detections",
+          filter: ["==", ["geometry-type"], "Point"],
+          layout: { visibility: "none" },
+          paint: { "circle-radius": 5, "circle-color": ["coalesce", ["get", "color"], "#d4a017"], "circle-stroke-width": 1.4, "circle-stroke-color": "#07090b" },
+        });
+
+        map.addSource("fuae", { type: "geojson", data: pointFc([] as FuaeRecord[], (r) => ({ title: r.title, kind: r.kind, why: r.why, dest: r.dest })) });
+        map.addLayer({
+          id: "fuae-glow",
+          type: "circle",
+          source: "fuae",
+          paint: {
+            "circle-radius": 11,
+            "circle-color": ["match", ["get", "kind"], "air", "#e2a15a", "#7ec8b3"],
+            "circle-opacity": 0.28,
+            "circle-blur": 0.45,
+          },
+        });
+        map.addLayer({
+          id: "fuae-pts",
+          type: "circle",
+          source: "fuae",
+          paint: {
+            "circle-radius": 5.5,
+            "circle-color": ["match", ["get", "kind"], "air", "#e2a15a", "#7ec8b3"],
+            "circle-stroke-width": 1.6,
+            "circle-stroke-color": "#07090b",
+          },
+        });
+
         map.addSource("measure", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
         map.addLayer({ id: "measure-line", type: "line", source: "measure", paint: { "line-color": "#d8d2c6", "line-width": 2, "line-dasharray": [2, 1] } });
 
@@ -633,6 +730,12 @@ export function MapCanvas({
       bindPopup("vessels-icon", (p) => `<div style="font:500 12px/1.35 'IBM Plex Sans',system-ui">${p.name}<div style="opacity:.7;font-size:11px">${p.kind === "lane" ? "Documented lane marker — not live AIS" : "Port node — not live AIS"}</div></div>`);
       bindPopup("news-pts", (p) => `<div style="font:500 12px/1.35 'IBM Plex Sans',system-ui">${p.name} · ${p.count} headlines<div style="opacity:.7;font-size:11px">Named-place centroid</div></div>`);
       bindPopup("brief-pts", (p) => `<div style="max-width:260px;font:500 12px/1.4 'IBM Plex Sans',system-ui"><div>${p.title}</div><div style="opacity:.75;font-size:11px;margin-top:4px">${p.claim} · ${p.confidence}</div><div style="font-weight:400;font-size:11px;margin-top:6px">${p.paragraph ?? ""}</div><div style="opacity:.65;font-size:10px;margin-top:6px">${p.sources ?? ""}</div></div>`);
+      bindPopup("detect-pts", (p) => `<div style="max-width:260px;font:500 12px/1.4 'IBM Plex Sans',system-ui"><div>${p.title}</div><div style="opacity:.75;font-size:11px;margin-top:4px">${p.klass} · observation, not identification</div><div style="font-weight:400;font-size:11px;margin-top:6px">${p.body ?? ""}</div></div>`);
+      bindPopup("fuae-pts", (p) => `<div style="max-width:260px;font:500 12px/1.4 'IBM Plex Sans',system-ui"><div>${p.title}</div><div style="opacity:.75;font-size:11px;margin-top:4px">FUAE · ${p.kind} · ${p.dest}</div><div style="font-weight:400;font-size:11px;margin-top:6px">${p.why ?? ""}</div><div style="opacity:.65;font-size:10px;margin-top:6px">Public track — not a cargo claim.</div></div>`);
+      map.on("click", "detect-fill", (e) => {
+        const id = e.features?.[0]?.properties?.siteId as string | undefined;
+        if (id) setSelectedSite(id);
+      });
       map.on("click", "osint-reports", (e) => {
         const id = e.features?.[0]?.properties?.id as string | undefined;
         if (id) setSelectedReport(id);
@@ -739,11 +842,13 @@ export function MapCanvas({
     setVis("sea-lanes", layers.vessels);
     setVis("corridors", layers.corridors);
     setVis("sites", layers.sites);
-    setVis("control-fill", layers.control);
-    setVis("control-line", layers.control);
-    setVis("control-line-dash", layers.control);
-    setVis("control-cities", layers.control);
-    setVis("control-labels", layers.control);
+    const controlOn = layers.control && imagery === "dark";
+    setVis("control-fill", controlOn);
+    setVis("control-line", controlOn);
+    setVis("control-line-dash", controlOn);
+    setVis("control-cities", controlOn);
+    setVis("control-labels", controlOn);
+    if (map.getLayer("control-fill")) map.setPaintProperty("control-fill", "fill-opacity", 0.22);
     setVis("osint-reports", layers.reports);
     setVis("news-pts", layers.news);
     setVis("ai-pts", layers.ai);
@@ -753,7 +858,10 @@ export function MapCanvas({
     setVis("brief-fill", briefingOn);
     setVis("brief-line", briefingOn);
     setVis("brief-pts", briefingOn);
-  }, [layers, imagery, briefingOn]);
+    setVis("detect-fill", detectOn);
+    setVis("detect-line", detectOn);
+    setVis("detect-pts", detectOn);
+  }, [layers, imagery, briefingOn, detectOn]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -821,6 +929,24 @@ export function MapCanvas({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready.current) return;
+    const src = map.getSource("detections");
+    if (src && "setData" in src) (src as { setData: (d: FC) => void }).setData(detectFc(detections));
+  }, [detections]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready.current) return;
+    const src = map.getSource("fuae");
+    if (src && "setData" in src) {
+      (src as { setData: (d: FC) => void }).setData(
+        pointFc(fuae, (r) => ({ title: r.title, kind: r.kind, why: r.why, dest: r.dest })),
+      );
+    }
+  }, [fuae]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready.current) return;
     const src = map.getSource("news-pts");
     if (src && "setData" in src) (src as { setData: (d: FC) => void }).setData(pointFc(newsPoints, (r) => ({ name: r.name, count: r.count })));
   }, [newsPoints]);
@@ -874,7 +1000,7 @@ export function MapCanvas({
     imagery === "dark" ? "Dark context" : "High-res Esri";
 
   return (
-    <div ref={wrap} className="absolute inset-0 bg-bg">
+    <div ref={wrap} className="absolute inset-0 z-0 bg-bg">
       {engine !== "gl" ? (
         <StaticSatellite date={date} boxes={boxes} firms={firms} flights={flights} onPick={setSelectedSite} />
       ) : null}

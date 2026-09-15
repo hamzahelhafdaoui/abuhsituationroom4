@@ -136,13 +136,12 @@
     z-index: 12;
     background: repeating-linear-gradient(
       to bottom,
-      rgb(0 0 0 / 0.14) 0px,
-      rgb(0 0 0 / 0.14) 1px,
+      rgb(0 0 0 / 0.08) 0px,
+      rgb(0 0 0 / 0.08) 1px,
       transparent 1px,
-      transparent 3px
+      transparent 4px
     );
-    mix-blend-mode: multiply;
-    opacity: 0.35;
+    opacity: 0.22;
   }
   .sitroom-vignette {
     pointer-events: none;

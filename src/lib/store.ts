@@ -5,6 +5,7 @@ import { seedChangeLog, sortLog } from "@/lib/changelog";
 import type { ControlUpdate } from "@/lib/control";
 import { partyToFaction } from "@/lib/control";
 import type { OsintReport } from "@/lib/osint";
+import type { FuaeRecord } from "@/lib/fuae";
 import type { TheaterId } from "@/lib/theaters";
 import { daysAgo } from "@/lib/utils";
 import type {
@@ -33,7 +34,7 @@ export type LayerKey =
   | "vessels"
   | "corridors";
 
-export type RightTab = "log" | "queue" | "news" | "brief" | "reports" | "feeds";
+export type RightTab = "log" | "queue" | "news" | "brief" | "reports" | "feeds" | "fuae";
 
 export interface FlyTarget {
   lat: number;
@@ -77,6 +78,7 @@ interface AppState {
   changeLog: ChangeEntry[];
   lastSweepAt: string | null;
   helpOpen: boolean;
+  helpSeen: boolean;
   customReports: OsintReport[];
   selectedReportId: string | null;
   addingReport: boolean;
@@ -87,6 +89,7 @@ interface AppState {
   controlUpdates: ControlUpdate[];
   flyTarget: FlyTarget | null;
   dateLock: boolean;
+  fuaeLog: FuaeRecord[];
   setSelectedSite: (id: string | null) => void;
   setSelectedAlert: (id: string | null) => void;
   setFocusedBox: (id: string | null) => void;
@@ -119,6 +122,7 @@ interface AppState {
   addControlUpdate: (u: ControlUpdate) => void;
   setFlyTarget: (t: FlyTarget | null) => void;
   setDateLock: (v: boolean) => void;
+  ingestFuae: (rows: FuaeRecord[]) => void;
 }
 
 function stamp(): string {
@@ -186,7 +190,8 @@ export const useAppStore = create<AppState>()(
       audit: [],
       changeLog: seedChangeLog(),
       lastSweepAt: null,
-      helpOpen: true,
+      helpOpen: false,
+      helpSeen: false,
       customReports: [],
       selectedReportId: null,
       addingReport: false,
@@ -197,6 +202,7 @@ export const useAppStore = create<AppState>()(
       controlUpdates: [],
       flyTarget: null,
       dateLock: false,
+      fuaeLog: [],
       setSelectedSite: (id) => set({ selectedSiteId: id, focusedBoxId: null, selectedReportId: null }),
       setSelectedAlert: (id) => set({ selectedAlertId: id }),
       setFocusedBox: (id) => set({ focusedBoxId: id, selectedSiteId: null, selectedAlertId: null }),
@@ -263,7 +269,7 @@ export const useAppStore = create<AppState>()(
         })),
       replaceLog: (rows) => set({ changeLog: sortLog(rows) }),
       setLastSweepAt: (iso) => set({ lastSweepAt: iso }),
-      setHelpOpen: (v) => set({ helpOpen: v }),
+      setHelpOpen: (v) => set(v ? { helpOpen: true } : { helpOpen: false, helpSeen: true }),
       addReport: (r) =>
         set((s) => {
           const faction = r.category === "control-change" ? partyToFaction(r.party) : null;
@@ -302,6 +308,18 @@ export const useAppStore = create<AppState>()(
       setFlyTarget: (flyTarget) =>
         set(flyTarget ? { flyTarget, selectedSiteId: null } : { flyTarget: null }),
       setDateLock: (dateLock) => set({ dateLock }),
+      ingestFuae: (rows) =>
+        set((s) => {
+          if (!rows.length && s.fuaeLog.length) return s;
+          const map = new Map(s.fuaeLog.map((r) => [r.id, r]));
+          for (const row of rows) {
+            const prev = map.get(row.id);
+            map.set(row.id, prev ? { ...prev, ...row, firstSeen: prev.firstSeen, lastSeen: row.lastSeen } : row);
+          }
+          return {
+            fuaeLog: [...map.values()].sort((a, b) => b.lastSeen.localeCompare(a.lastSeen)).slice(0, 200),
+          };
+        }),
     }),
     {
       name: "ahsr-sudan-v2",
@@ -314,13 +332,14 @@ export const useAppStore = create<AppState>()(
         imagery: s.imagery,
         changeLog: s.changeLog,
         lastSweepAt: s.lastSweepAt,
-        helpOpen: s.helpOpen,
+        helpSeen: s.helpSeen,
         customReports: s.customReports,
         hudOn: s.hudOn,
         detectOn: s.detectOn,
         theaterId: s.theaterId,
         controlUpdates: s.controlUpdates,
         dateLock: s.dateLock,
+        fuaeLog: s.fuaeLog,
       }),
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<AppState>;
@@ -344,6 +363,8 @@ export const useAppStore = create<AppState>()(
             corridors: p.layers?.corridors ?? true,
           },
           controlUpdates: p.controlUpdates ?? [],
+          helpOpen: false,
+          helpSeen: Boolean(p.helpSeen) || p.helpOpen === false,
         };
       },
     },
