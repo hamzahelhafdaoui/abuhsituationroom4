@@ -1,4 +1,4 @@
-export type ImagerySource = "s2" | "viirs" | "s2cloudless" | "hires" | "dark";
+export type ImagerySource = "s2" | "viirs" | "s2cloudless" | "hires" | "gmaps" | "dark";
 
 export const IMAGERY: Record<
   ImagerySource,
@@ -10,6 +10,13 @@ export const IMAGERY: Record<
     dated: false,
     note: "Esri World Imagery. Best for yards and roofs. Not a dated scene.",
     pickerNote: "Sub-meter aerial/satellite — zoom to street & building level",
+  },
+  gmaps: {
+    label: "Google satellite",
+    grain: "yards / roofs · not a date",
+    dated: false,
+    note: "Google satellite tiles for visual compare with Esri. Not a dated scene. Switch Esri ↔ Google on the same pin.",
+    pickerNote: "Google satellite — compare yards/roofs with Esri on the same location",
   },
   s2: {
     label: "Sentinel-2 · dated HLS",

@@ -81,9 +81,9 @@ export const TECHNIQUES: Technique[] = [
   },
   {
     id: "weak",
-    playbook: "Weak / semi-supervised labels (OSM buildings, active learning)",
-    weRun: "OSM features >5 km from the archive are osm_gap candidates. Human review is the active-learning loop (confirm / reject / needs imagery).",
-    limit: "Gaps are invitations to look, not discoveries of secret facilities.",
+    playbook: "OSM-AI-helper (Mozilla.ai / hamzahelhafdaoui): OSM ground truth → tiles → existing / new / missed",
+    weRun: "OSM military/aerodrome/warehouse tags are weak labels. Each chip is scored existing (OSM already maps it), new (OSM/morphology far from archive), or missed (catalog pin with no OSM). Confirm / reject / needs-imagery is the active-learning loop. No YOLO or SAM2 weights in this client.",
+    limit: "A yellow 'new' box is an invitation to look, not a discovery of a secret facility. We do not train a targeting model.",
   },
   {
     id: "fusion",

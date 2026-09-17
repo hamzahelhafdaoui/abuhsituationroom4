@@ -9,6 +9,7 @@ import { CONFIDENCE_RUBRIC, PARTY_LABEL, type AiBrief, type Confidence, type Fee
 import { DETECT_KLASS, type DetectHit, type DetectReport } from "@/lib/imagery-detect";
 import { HUNTS, type HuntId } from "@/lib/hunt";
 import type { FuaeRecord } from "@/lib/fuae";
+import { RSF_WATCH, WHY_LABEL, type RsfWatchSite } from "@/data/rsf-watch";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -112,6 +113,65 @@ export function FuaePanel({
                 {r.origin} → {r.dest}
               </span>
               <span className="text-[11px] leading-snug text-subtle">{r.why}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export function RsfWatchPanel({
+  onOpen,
+}: {
+  onOpen: (w: RsfWatchSite) => void;
+}) {
+  const primary = RSF_WATCH.filter((w) => w.watch === "primary");
+  const approach = RSF_WATCH.filter((w) => w.watch === "approach");
+  return (
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3">
+      <div className="mb-1 flex items-baseline justify-between gap-2">
+        <h2 className="text-xs font-medium uppercase tracking-wider text-subtle">RSF watchlist</h2>
+        <span className="font-mono text-[11px] tabular-nums text-muted">{RSF_WATCH.length} sites</span>
+      </div>
+      <p className="text-[11px] leading-snug text-subtle">
+        Public pins associated with RSF in open reporting or as rear/approach nodes (Libya, Chad, Ethiopia / Blue Nile, Darfur). Watch ≠ occupancy. Confirm on Esri / Google. Not a targeting list.
+      </p>
+      <p className="mt-3 text-[10px] font-medium uppercase tracking-wider text-subtle">Primary</p>
+      <ul className="mt-1 space-y-1.5">
+        {primary.map((w) => (
+          <li key={w.id}>
+            <button
+              type="button"
+              onClick={() => onOpen(w)}
+              className="flex w-full flex-col gap-1 rounded-xl border border-border bg-surface/60 p-3 text-left hover:bg-raised"
+            >
+              <span className="flex items-center justify-between gap-2 text-[11px] text-subtle">
+                <span>{WHY_LABEL[w.why]}</span>
+                <span className="font-mono">{w.lastSeen}</span>
+              </span>
+              <span className="text-sm leading-snug">{w.name}</span>
+              <span className="text-[11px] text-muted">{w.place}</span>
+              <span className="line-clamp-2 text-[11px] leading-snug text-subtle">{w.note}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-4 text-[10px] font-medium uppercase tracking-wider text-subtle">Approach / rear</p>
+      <ul className="mt-1 space-y-1.5">
+        {approach.map((w) => (
+          <li key={w.id}>
+            <button
+              type="button"
+              onClick={() => onOpen(w)}
+              className="flex w-full flex-col gap-1 rounded-xl border border-border bg-surface/60 p-3 text-left hover:bg-raised"
+            >
+              <span className="flex items-center justify-between gap-2 text-[11px] text-subtle">
+                <span>{WHY_LABEL[w.why]}</span>
+                <span className="font-mono">{w.lastSeen}</span>
+              </span>
+              <span className="text-sm leading-snug">{w.name}</span>
+              <span className="line-clamp-2 text-[11px] leading-snug text-subtle">{w.note}</span>
             </button>
           </li>
         ))}
@@ -761,18 +821,20 @@ export function DetectPanel({
   const shown = hits.filter((h) => filter === "all" || h.hunts?.includes(filter));
   const ranked = [...shown].sort((a, b) => {
     const w = (h: DetectHit) =>
+      (h.id.startsWith("det-scan-") ? 8 : 0) +
       (h.hunts?.includes("bda") ? 4 : 0) +
       (h.hunts?.includes("irreg") ? 3 : 0) +
       (h.hunts?.includes("cargo") || h.hunts?.includes("sea") ? 2 : 0) +
       h.confidence;
     return w(b) - w(a);
   });
+  const scanN = hits.filter((h) => h.id.startsWith("det-scan-")).length;
   return (
     <div className="hud-panel pointer-events-auto mt-2 w-72 max-w-[86vw] overflow-hidden">
       <div className="flex items-center justify-between px-2.5 py-2">
-        <p className="text-xs font-medium">Auto-find</p>
+        <p className="text-xs font-medium">Imagery sweep</p>
         <span className="font-mono text-[11px] tabular-nums text-subtle">
-          {loading ? "…" : `${shown.length}/${hits.length}`}
+          {loading ? "scanning tiles…" : `${scanN} finds · ${shown.length}/${hits.length}`}
         </span>
       </div>
       <p className="border-t border-border px-2.5 py-1.5 text-[10px] leading-snug text-subtle">
@@ -826,6 +888,7 @@ export function DetectPanel({
                   <span className="min-w-0">
                     <span className="block truncate text-[11px] text-fg">{h.title}</span>
                     <span className="font-mono text-[10px] text-subtle">
+                      {h.id.startsWith("det-scan-") ? "SCAN · " : ""}
                       {meta.short} · c{h.confidence}
                       {h.change != null ? ` · Δ${h.change}` : ""}
                       {h.cloud !== "unknown" ? ` · ${h.cloud}` : ""}

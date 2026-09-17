@@ -11,10 +11,11 @@ import {
   Sparkles,
 } from "lucide-react";
 import { IMAGERY, type ImagerySource, type LiveMeta } from "@/lib/types";
+import { RSF_WATCH } from "@/data/rsf-watch";
 import { useAppStore, type LayerKey } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-const PICKER: ImagerySource[] = ["hires", "s2cloudless", "viirs", "dark", "s2"];
+const PICKER: ImagerySource[] = ["hires", "gmaps", "s2cloudless", "viirs", "dark", "s2"];
 
 export function BasemapPicker() {
   const imagery = useAppStore((s) => s.imagery);
@@ -109,7 +110,7 @@ export function LayerStack({
   const toggle = useAppStore((s) => s.toggleLayer);
   const rows: { key: LayerKey; label: string; count?: number; icon: typeof Flame }[] = [
     { key: "ai", label: "AI events", count: counts.ai, icon: Sparkles },
-    { key: "control", label: "Control areas", icon: Shield },
+    { key: "rsfWatch", label: "RSF watch", count: RSF_WATCH.length, icon: Shield },
     { key: "reports", label: "Reports", count: counts.reports, icon: Radio },
     { key: "news", label: "News", count: counts.news, icon: Newspaper },
     { key: "firms", label: "Fire hotspots", count: counts.fires, icon: Flame },

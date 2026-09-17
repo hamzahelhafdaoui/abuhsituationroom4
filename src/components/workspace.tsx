@@ -12,6 +12,7 @@ import { composeBriefing } from "@/lib/briefing";
 import { fuseDetect, runDetect, type DetectReport } from "@/lib/imagery-detect";
 import { allVessels, mergeFlights } from "@/lib/traffic";
 import { scanFuae, seedFuae, type FuaeRecord } from "@/lib/fuae";
+import type { Flag } from "@/lib/flags";
 import { SEED_REPORTS } from "@/lib/osint";
 import { GDELT_ARCHIVE, OSM_SEED, FEED_SEED } from "@/lib/warroom-data";
 import { THEATER_BY_ID, THEATERS } from "@/lib/theaters";
@@ -22,6 +23,7 @@ import { MapCanvas } from "@/components/map-canvas";
 import { LeftRail, RightRail, type MobileTab } from "@/components/rails";
 import { ControlLegend, DetectPanel } from "@/components/monitor-panels";
 import { ClassificationBar, ClockChip, SensorBar, SitroomFx } from "@/components/hud-overlay";
+import { LookTray } from "@/components/sensor-fx";
 import { BasemapPicker, LayerStack } from "@/components/map-chrome";
 
 const JUMP = [
@@ -174,7 +176,9 @@ export function Workspace() {
   const rightTab = useAppStore((s) => s.rightTab);
   const setRightTab = useAppStore((s) => s.setRightTab);
   const setFlyTarget = useAppStore((s) => s.setFlyTarget);
+  const setSelectedReport = useAppStore((s) => s.setSelectedReport);
   const detectOn = useAppStore((s) => s.detectOn);
+  const look = useAppStore((s) => s.look);
   const ingestFuae = useAppStore((s) => s.ingestFuae);
   const fuaeLog = useAppStore((s) => s.fuaeLog);
   const boxes = useVisibleBoxes();
@@ -502,7 +506,9 @@ export function Workspace() {
       ranAt: new Date().toISOString(),
       opticalTried: 0,
       opticalOk: 0,
-      note: "Fusion (FIRMS × ADS-B × AIS × OSM × news × catalog). HLS chips scoring…",
+      gridTried: 0,
+      gridHits: 0,
+      note: "Sweeping blank satellite tiles (Esri + Sentinel-2) for pads, yards, berms, change. Known pins scored in parallel.",
     });
     setDetecting(true);
     let cancelled = false;
@@ -519,9 +525,9 @@ export function Workspace() {
       window.clearTimeout(t);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detectOn, date, compareDate, firmCount, flightCount, newsCount, boxes.length, vessels.length, gdelt.length]);
+  }, [detectOn, date, compareDate, boxes.length]);
 
-  function openDesk(tabId: typeof rightTab = rightTab) {
+  function openDesk(tabId: typeof rightTab = "queue") {
     setDeskOpen(true);
     setRightTab(tabId);
   }
@@ -581,10 +587,19 @@ export function Workspace() {
       setDeskOpen(true);
       setRightTab("fuae");
     },
+    detections: detectReport?.hits ?? [],
+    onOpenFlag: (f: Flag) => {
+      setFlyTarget({ lat: f.lat, lon: f.lon, zoom: 11.2, label: f.title });
+      if (f.siteId) setSelectedSite(f.siteId);
+      if (f.id.startsWith("flag-rep-")) {
+        setSelectedReport(f.id.slice("flag-rep-".length));
+        setDeskOpen(true);
+      }
+    },
   };
 
   return (
-    <div className="relative h-dvh overflow-hidden bg-bg text-fg">
+    <div className="relative h-dvh overflow-hidden bg-bg text-fg" data-look={look}>
       <MapCanvas
         boxes={boxes}
         firms={firms}
@@ -679,7 +694,10 @@ export function Workspace() {
           </div>
 
           <nav className="pointer-events-auto hidden items-center gap-2 sm:flex">
-            <SensorBar />
+            <SensorBar docsOpen={deskOpen} onDocs={() => {
+              if (deskOpen) setDeskOpen(false);
+              else openDesk("queue");
+            }} />
             <div className="hud-panel flex items-center gap-2 px-3 py-1.5">
               <ClockChip />
             </div>
@@ -837,10 +855,10 @@ export function Workspace() {
       </div>
 
       {deskOpen ? (
-        <div className="pointer-events-none absolute bottom-24 right-3 top-[14rem] z-20 hidden w-[24.5rem] lg:block">
+        <div className="pointer-events-none absolute inset-x-3 bottom-[5.5rem] top-[7.5rem] z-40 md:inset-auto md:bottom-24 md:right-3 md:top-[14rem] md:w-[24.5rem] lg:block">
           <div className="hud-panel pointer-events-auto flex h-full flex-col overflow-hidden">
             <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-2">
-              <span className="font-mono text-[10px] tracking-wider text-muted">DOCS</span>
+              <span className="font-mono text-[10px] tracking-wider text-muted">DOCS · briefs · logs · news</span>
               <button
                 type="button"
                 className="text-xs text-muted hover:text-fg"
@@ -855,15 +873,18 @@ export function Workspace() {
       ) : (
         <button
           type="button"
-          className="pointer-events-auto absolute bottom-28 right-3 z-20 hidden h-11 items-center gap-2 rounded-full border border-border bg-bg/85 px-4 text-xs text-fg lg:flex"
-          onClick={() => openDesk("news")}
+          className="pointer-events-auto absolute bottom-28 right-3 z-20 flex h-11 items-center gap-2 rounded-full border border-border bg-bg/85 px-4 text-xs text-fg"
+          onClick={() => openDesk("queue")}
         >
           <PanelRight className="size-3.5" />
-          Open docs
+          Flags · briefs · logs
         </button>
       )}
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 hidden p-3 md:block">
+        <div className="pointer-events-auto mx-auto mb-2 flex max-w-5xl justify-center">
+          <LookTray />
+        </div>
         <div className="pointer-events-auto mx-auto max-w-5xl">
           <DateStrip
             date={date}
@@ -887,7 +908,7 @@ export function Workspace() {
             ["news", "News", Newspaper],
             ["fuae", "FUAE", Plane],
             ["log", "Log", FileText],
-            ["alerts", "Queue", AlertTriangle],
+            ["alerts", "Flags", AlertTriangle],
             ["brief", "Brief", ClipboardList],
             ["layers", "Layers", Layers],
           ] as const).map(([id, label, Icon]) => (
@@ -935,16 +956,19 @@ export function Workspace() {
                 <span className="text-fg">Theater chips</span> jump Sudan, Egypt, Ethiopia, Somalia, Chad, Libya, UAE, Eritrea, and the Red Sea corridor. Pins are public sites — bases, yards, ports, crossings — not occupancy.
               </li>
               <li>
-                <span className="text-fg">H</span> toggles the HUD overlay. <span className="text-fg">D</span> / <span className="text-fg">DET</span> runs the GEOINT hunt: BDA, cargo, air, sea, vehicles, pads, berms, POL, camps, crossings, tracks, foreign-linked nodes. Boxes are candidates for review — not identifications. Use the basemap picker for real satellite looks.
+                <span className="text-fg">1–6</span> switch God’s Eye View sensor looks on the satellite itself: Optical, CRT phosphor, NVG, FLIR ironbow, Noir, Snow. Looks tint the map tiles — not the HUD. H still toggles HUD chrome.
+              </li>
+              <li>
+                <span className="text-fg">Double-click</span> the map to descend on that point. Site chips fly in with pitch and a lock box. <span className="text-fg">ORBIT</span> / O slowly circles the target. Q / E bank the view. R resets north.
               </li>
               <li>
                 <span className="text-fg">Contacts</span> are live ADS-B plus maritime lane markers that crawl along documented Red Sea / Aden / Suez corridors. Cargo-typical airframes paint amber. Lane markers are NOT live AIS — they move so the maritime picture is not frozen.
               </li>
               <li>
-                <span className="text-fg">DOCS</span> opens the news / FUAE / log / brief drawer. It is closed by default so the satellite is not covered. <span className="text-fg">FUAE</span> logs UAE-linked ADS-B and documented UAE–Horn / Red Sea contacts — route observation, not a cargo claim.
+                <span className="text-fg">DOCS</span> (next to HUD / DET, or the <span className="text-fg">Briefs · logs · news</span> pill) opens news, log, brief, FUAE, queue. Closed by default so the satellite is not covered.
               </li>
               <li>
-                <span className="text-fg">Basemap picker</span> sits top-left: High-res Esri, Sentinel-2 10 m, VIIRS daily, Dark context, dated HLS. Control shading (SAF cyan / RSF rust / Kordofan gold) is only on the dark map, not on satellite.
+                <span className="text-fg">Basemap picker</span> sits top-left: High-res Esri, Google satellite (compare yards/roofs), Sentinel-2 10 m, VIIRS daily, Dark context, dated HLS. Control shading (SAF cyan / RSF rust) is only on the dark map, not on satellite.
               </li>
               <li>
                 Documentation archive only. No targeting, fire control, or kill-chain language. Public data.

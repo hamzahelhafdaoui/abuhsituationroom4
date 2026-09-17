@@ -16,7 +16,10 @@ export type HuntId =
   | "track"
   | "fx"
   | "osm"
-  | "wire";
+  | "wire"
+  | "saf"
+  | "rsf"
+  | "chain";
 
 export interface Hunt {
   id: HuntId;
@@ -40,8 +43,11 @@ export const HUNTS: Hunt[] = [
   { id: "thrm", short: "THRM", label: "Thermal", look: "Non-ag FIRMS, night clusters, industrial heat. Not a strike feed." },
   { id: "track", short: "TRACK", label: "Desert tracks / wells", look: "Well stops, dust corridors, remote pads on Libya–Chad–Darfur lines." },
   { id: "fx", short: "FX", label: "Foreign-linked nodes", look: "Public UAE / Assab / Berbera / Kufra / Dhafra pins. Pin ≠ cargo." },
-  { id: "osm", short: "OSM", label: "Uncatalogued features", look: "OSM / OurAirports gaps: helipads, depots, strips, fuel." },
-  { id: "wire", short: "WIRE", label: "Reporting cues", look: "News / GDELT / published OSINT geocoded as leads, not facts." },
+  { id: "osm", short: "OSM", label: "Uncatalogued features", look: "OSM-AI-helper: existing / new / missed vs volunteered OSM. Not a secret-base finder." },
+  { id: "wire", short: "WIRE", label: "Reporting cues", look: "News / GDELT / @AfriMEOSINT geocoded as leads, not facts." },
+  { id: "saf", short: "SAF", label: "SAF-typical picture", look: "Formal garrisons, airbases, Nile rear. Compiled control, not occupancy." },
+  { id: "rsf", short: "RSF", label: "RSF-typical picture", look: "Non-SAF compounds, technicals parks, converted yards. Indicators-and-patterns — not ownership." },
+  { id: "chain", short: "CHAIN", label: "Movement chain", look: "Arrival → staging → hub → operational area. Libya–Darfur and Ethiopia–Kurmuk. Chain incomplete until observed." },
 ];
 
 export const HUNT_BY_ID = Object.fromEntries(HUNTS.map((h) => [h.id, h])) as Record<HuntId, Hunt>;
@@ -57,8 +63,11 @@ const WIRE: [HuntId, RegExp][] = [
   ["pol", /\b(fuel|diesel|petrol|pol|refinery|bladder|depot)\b/i],
   ["camp", /\b(camp|idp|displac|tent|shelter)\b/i],
   ["xing", /\b(crossing|border|bridge|checkpoint|frontier)\b/i],
-  ["fx", /\b(uae|emirati|abu dhabi|assab|berbera|kufra|dhafra|wagner|africa corps)\b/i],
+  ["fx", /\b(uae|emirati|abu dhabi|assab|berbera|kufra|dhafra|wagner|africa corps|pecotox)\b/i],
   ["irreg", /\b(makeshift|unofficial|non-army|militia|rsf rear)\b/i],
+  ["saf", /\b(saf|sudanese armed|sudan army|army garrison)\b/i],
+  ["rsf", /\b(rsf|rapid support|hemedti|paramilitary)\b/i],
+  ["chain", /\b(convoy|airbridge|resupply|staging|kufra|asosa|libya.?sudan|movement chain)\b/i],
 ];
 
 export function matchHunts(text: string): HuntId[] {
@@ -101,6 +110,14 @@ export function huntsFromKlass(klass: string): HuntId[] {
       return ["osm"];
     case "reporting_cue":
       return ["wire"];
+    case "burn_scar":
+      return ["bda"];
+    case "wreck_air":
+      return ["bda", "air"];
+    case "wreck_bldg":
+      return ["bda"];
+    case "camp_buildup":
+      return ["camp", "pad", "veh"];
     default:
       return ["pad"];
   }

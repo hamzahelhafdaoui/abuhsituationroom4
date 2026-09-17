@@ -5,6 +5,7 @@ import { FACTION_META, type OsintReport } from "@/lib/osint";
 import { controlZonesFor, isUsefulOsm, mergedControlCities } from "@/lib/control";
 import { circlePoly, type BriefAnno } from "@/lib/briefing";
 import { DETECT_KLASS, type DetectHit } from "@/lib/imagery-detect";
+import { rsfWatchResolved } from "@/data/rsf-watch";
 import type { FuaeRecord } from "@/lib/fuae";
 import { CORRIDORS, THEATER_BY_ID } from "@/lib/theaters";
 import { SEA_LANES, allVessels, deadReckon } from "@/lib/traffic";
@@ -23,6 +24,8 @@ import {
 } from "@/lib/types";
 import { useAppStore } from "@/lib/store";
 import { cn, snapshotUrl } from "@/lib/utils";
+import { cinematicFly, pitchForZoom, spyEase } from "@/lib/spy-cam";
+import { LookFx } from "@/components/sensor-fx";
 
 const PARTY_COLOR: Record<string, string> = {
   saf: "#7b93a6",
@@ -67,8 +70,9 @@ function thermalUrl(date: string): string {
   return `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_NOAA20_Thermal_Anomalies_375m_All/default/${date}/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png`;
 }
 
-function vis(imagery: ImagerySource, id: "hls" | "viirs" | "s2cloudless" | "esri" | "dark"): "visible" | "none" {
+function vis(imagery: ImagerySource, id: "hls" | "viirs" | "s2cloudless" | "esri" | "gmaps" | "dark"): "visible" | "none" {
   if (id === "dark") return imagery === "dark" ? "visible" : "none";
+  if (id === "gmaps") return imagery === "gmaps" ? "visible" : "none";
   if (id === "esri") return imagery === "hires" || imagery === "s2" || imagery === "viirs" ? "visible" : "none";
   if (id === "hls") return imagery === "s2" ? "visible" : "none";
   if (id === "viirs") return imagery === "viirs" ? "visible" : "none";
@@ -151,6 +155,13 @@ function baseStyle(date: string, imagery: ImagerySource): StyleSpecification {
         attribution: "Esri World Imagery",
         maxzoom: 19,
       },
+      gmaps: {
+        type: "raster",
+        tiles: ["https://mt1.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}"],
+        tileSize: 256,
+        attribution: "Google satellite",
+        maxzoom: 20,
+      },
       dark: {
         type: "raster",
         tiles: [DARK_TILES],
@@ -177,6 +188,7 @@ function baseStyle(date: string, imagery: ImagerySource): StyleSpecification {
     },
     layers: [
       { id: "esri", type: "raster", source: "esri", layout: { visibility: vis(imagery, "esri") } },
+      { id: "gmaps", type: "raster", source: "gmaps", layout: { visibility: vis(imagery, "gmaps") } },
       {
         id: "dark",
         type: "raster",
@@ -441,6 +453,7 @@ export function MapCanvas({
   const flightSnap = useRef({ rows: flights, at: Date.now() });
   const [engine, setEngine] = useState<"static" | "gl">("static");
   const [cursor, setCursor] = useState("—");
+  const [mapReady, setMapReady] = useState(false);
   const layers = useAppStore((s) => s.layers);
   const imagery = useAppStore((s) => s.imagery);
   const date = useAppStore((s) => s.date);
@@ -458,6 +471,8 @@ export function MapCanvas({
   const setFlyTarget = useAppStore((s) => s.setFlyTarget);
   const controlUpdates = useAppStore((s) => s.controlUpdates);
   const detectOn = useAppStore((s) => s.detectOn);
+  const orbitOn = useAppStore((s) => s.orbitOn);
+  const setOrbitOn = useAppStore((s) => s.setOrbitOn);
 
   useEffect(() => {
     if (!host.current) return;
@@ -467,6 +482,7 @@ export function MapCanvas({
     let onCmd: ((ev: Event) => void) | null = null;
     let onFit: ((ev: Event) => void) | null = null;
     let onMeasure: (() => void) | null = null;
+    let onNudge: ((ev: Event) => void) | null = null;
 
     void import("maplibre-gl").then((maplibregl) => {
       if (cancelled || !host.current) return;
@@ -481,12 +497,19 @@ export function MapCanvas({
         minZoom: 2.6,
         maxZoom: 18.5,
         attributionControl: { compact: true },
-        maxPitch: 0,
+        maxPitch: 55,
+        pitchWithRotate: true,
+        dragRotate: true,
+        canvasContextAttributes: { preserveDrawingBuffer: true },
       });
       map.addControl(new NavigationControl({ showCompass: false }), "bottom-left");
       map.addControl(new ScaleControl({ maxWidth: 110, unit: "metric" }), "bottom-left");
       map.setPadding(hudPad(false));
       mapRef.current = map;
+      try {
+        map.scrollZoom.setWheelZoomRate(1 / 620);
+        map.scrollZoom.setZoomRate(1 / 220);
+      } catch { /* optional */ }
 
       const boxesNow = boxes;
       const firmsNow = firms;
@@ -497,6 +520,7 @@ export function MapCanvas({
       map.on("load", () => {
         if (!map || cancelled) return;
         map.resize();
+        setMapReady(true);
         addContactIcons(map);
 
         map.addSource("thermal-raster", { type: "raster", tiles: [thermalUrl(state.date)], tileSize: 256, maxzoom: 8, attribution: "NASA GIBS thermal" });
@@ -649,7 +673,38 @@ export function MapCanvas({
         map.addLayer({ id: "brief-line", type: "line", source: "brief-anno", filter: ["==", ["geometry-type"], "Polygon"], layout: { visibility: "none" }, paint: { "line-color": ["coalesce", ["get", "color"], "#d4a017"], "line-width": 1.6, "line-dasharray": [2, 1.4] } });
         map.addLayer({ id: "brief-pts", type: "circle", source: "brief-anno", filter: ["==", ["geometry-type"], "Point"], layout: { visibility: "none" }, paint: { "circle-radius": 5.5, "circle-color": ["coalesce", ["get", "color"], "#d4a017"], "circle-stroke-width": 1.5, "circle-stroke-color": "#07090b" } });
 
-        map.addSource("detections", { type: "geojson", data: detectFc([]) });
+        map.addSource("rsf-watch", {
+          type: "geojson",
+          data: pointFc(rsfWatchResolved(), (r) => ({
+            id: r.siteId ?? r.id,
+            name: r.name,
+            why: r.why,
+            watch: r.watch,
+            note: r.note,
+          })),
+        });
+        map.addLayer({
+          id: "rsf-watch-glow",
+          type: "circle",
+          source: "rsf-watch",
+          paint: {
+            "circle-radius": ["match", ["get", "watch"], "primary", 14, 10],
+            "circle-color": "#b38862",
+            "circle-opacity": 0.22,
+            "circle-blur": 0.4,
+          },
+        });
+        map.addLayer({
+          id: "rsf-watch",
+          type: "circle",
+          source: "rsf-watch",
+          paint: {
+            "circle-radius": ["match", ["get", "watch"], "primary", 6.5, 4.5],
+            "circle-color": "#b38862",
+            "circle-stroke-width": 1.6,
+            "circle-stroke-color": "#12110f",
+          },
+        });
         map.addLayer({
           id: "detect-fill",
           type: "fill",
@@ -730,7 +785,11 @@ export function MapCanvas({
       bindPopup("vessels-icon", (p) => `<div style="font:500 12px/1.35 'IBM Plex Sans',system-ui">${p.name}<div style="opacity:.7;font-size:11px">${p.kind === "lane" ? "Documented lane marker — not live AIS" : "Port node — not live AIS"}</div></div>`);
       bindPopup("news-pts", (p) => `<div style="font:500 12px/1.35 'IBM Plex Sans',system-ui">${p.name} · ${p.count} headlines<div style="opacity:.7;font-size:11px">Named-place centroid</div></div>`);
       bindPopup("brief-pts", (p) => `<div style="max-width:260px;font:500 12px/1.4 'IBM Plex Sans',system-ui"><div>${p.title}</div><div style="opacity:.75;font-size:11px;margin-top:4px">${p.claim} · ${p.confidence}</div><div style="font-weight:400;font-size:11px;margin-top:6px">${p.paragraph ?? ""}</div><div style="opacity:.65;font-size:10px;margin-top:6px">${p.sources ?? ""}</div></div>`);
-      bindPopup("detect-pts", (p) => `<div style="max-width:260px;font:500 12px/1.4 'IBM Plex Sans',system-ui"><div>${p.title}</div><div style="opacity:.75;font-size:11px;margin-top:4px">${p.klass} · observation, not identification</div><div style="font-weight:400;font-size:11px;margin-top:6px">${p.body ?? ""}</div></div>`);
+      bindPopup("rsf-watch", (p) => `<div style="max-width:260px;font:500 12px/1.4 'IBM Plex Sans',system-ui"><div>${p.name}</div><div style="opacity:.75;font-size:11px;margin-top:4px">RSF watch · ${p.why} · observation</div><div style="font-weight:400;font-size:11px;margin-top:6px">${p.note ?? ""}</div></div>`);
+      map.on("click", "rsf-watch", (e) => {
+        const id = e.features?.[0]?.properties?.id as string | undefined;
+        if (id) setSelectedSite(id);
+      });
       bindPopup("fuae-pts", (p) => `<div style="max-width:260px;font:500 12px/1.4 'IBM Plex Sans',system-ui"><div>${p.title}</div><div style="opacity:.75;font-size:11px;margin-top:4px">FUAE · ${p.kind} · ${p.dest}</div><div style="font-weight:400;font-size:11px;margin-top:6px">${p.why ?? ""}</div><div style="opacity:.65;font-size:10px;margin-top:6px">Public track — not a cargo claim.</div></div>`);
       map.on("click", "detect-fill", (e) => {
         const id = e.features?.[0]?.properties?.siteId as string | undefined;
@@ -758,12 +817,12 @@ export function MapCanvas({
       onCmd = (ev: Event) => {
         const cmd = (ev as CustomEvent<"in" | "out">).detail;
         if (!map) return;
-        if (cmd === "in") map.zoomIn({ duration: 250 });
-        if (cmd === "out") map.zoomOut({ duration: 250 });
+        const z = map.getZoom() + (cmd === "in" ? 1.4 : -1.4);
+        map.easeTo({ zoom: z, pitch: pitchForZoom(z), duration: 780, easing: spyEase, essential: true });
       };
       onFit = (ev: Event) => {
         const b = (ev as CustomEvent<{ west: number; south: number; east: number; north: number }>).detail;
-        map?.fitBounds([[b.west, b.south], [b.east, b.north]], { padding: 48, duration: 800, maxZoom: 11.5 });
+        map?.fitBounds([[b.west, b.south], [b.east, b.north]], { padding: 48, duration: 1400, maxZoom: 11.5, pitch: 8, essential: true });
       };
       const measurePts: [number, number][] = [];
       onMeasure = () => {
@@ -785,6 +844,26 @@ export function MapCanvas({
       window.addEventListener("sahel-map", onCmd);
       window.addEventListener("sahel-map-fit", onFit);
       window.addEventListener("sahel-map-measure", onMeasure);
+      onNudge = (ev: Event) => {
+        const d = (ev as CustomEvent<{ bearing?: number; reset?: boolean }>).detail;
+        if (!map) return;
+        if (d.reset) {
+          map.easeTo({ bearing: 0, pitch: 0, duration: 700, easing: spyEase });
+          return;
+        }
+        if (d.bearing) map.easeTo({ bearing: map.getBearing() + d.bearing, duration: 650, easing: spyEase });
+      };
+      window.addEventListener("sahel-map-nudge", onNudge);
+      map.doubleClickZoom.disable();
+      map.on("dblclick", (e) => {
+        if (!map) return;
+        cinematicFly(map, {
+          lon: e.lngLat.lng,
+          lat: e.lngLat.lat,
+          zoom: Math.min(17.4, map.getZoom() + 2.7),
+          label: "DESCEND",
+        });
+      });
 
       if (wrap.current && typeof ResizeObserver !== "undefined") {
         ro = new ResizeObserver(() => map?.resize());
@@ -804,6 +883,7 @@ export function MapCanvas({
       if (onCmd) window.removeEventListener("sahel-map", onCmd);
       if (onFit) window.removeEventListener("sahel-map-fit", onFit);
       if (onMeasure) window.removeEventListener("sahel-map-measure", onMeasure);
+      if (onNudge) window.removeEventListener("sahel-map-nudge", onNudge);
       hoverPopup.current?.remove();
       ro?.disconnect();
       map?.remove();
@@ -825,6 +905,7 @@ export function MapCanvas({
     const visOn = (on: boolean): "visible" | "none" => (on ? "visible" : "none");
     const setVis = (id: string, on: boolean) => { if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", visOn(on)); };
     setVis("esri", imagery === "hires" || imagery === "s2" || imagery === "viirs");
+    setVis("gmaps", imagery === "gmaps");
     setVis("dark", imagery === "dark");
     setVis("dark-ref", imagery === "dark");
     setVis("viirs", imagery === "viirs");
@@ -841,7 +922,8 @@ export function MapCanvas({
     setVis("vessels-icon", layers.vessels);
     setVis("sea-lanes", layers.vessels);
     setVis("corridors", layers.corridors);
-    setVis("sites", layers.sites);
+    setVis("rsf-watch", layers.rsfWatch);
+    setVis("rsf-watch-glow", layers.rsfWatch);
     const controlOn = layers.control && imagery === "dark";
     setVis("control-fill", controlOn);
     setVis("control-line", controlOn);
@@ -967,7 +1049,12 @@ export function MapCanvas({
     const site = SITES.find((s) => s.id === selectedSiteId);
     if (!site) return;
     const close = yardsZoom || CLOSE_KINDS.has(site.kind);
-    map.flyTo({ center: [site.lon, site.lat], zoom: yardsZoom ? 17.2 : close ? 16.1 : 14.6, duration: 900, essential: true });
+    cinematicFly(map, {
+      lon: site.lon,
+      lat: site.lat,
+      zoom: yardsZoom ? 17.2 : close ? 16.2 : 14.8,
+      label: site.name,
+    });
     if (yardsZoom) clearYardsZoom();
   }, [selectedSiteId, yardsZoom, clearYardsZoom]);
 
@@ -976,13 +1063,13 @@ export function MapCanvas({
     if (!map || !focusedBoxId) return;
     const box = boxes.find((b) => b.id === focusedBoxId);
     if (!box) return;
-    map.fitBounds([[box.west, box.south], [box.east, box.north]], { padding: 48, duration: 800, maxZoom: 11.5 });
+    map.fitBounds([[box.west, box.south], [box.east, box.north]], { padding: 48, duration: 1400, maxZoom: 11.8, pitch: 12, essential: true });
   }, [focusedBoxId, boxes]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !flyTarget) return;
-    map.flyTo({ center: [flyTarget.lon, flyTarget.lat], zoom: flyTarget.zoom, duration: 900, essential: true });
+    cinematicFly(map, { lon: flyTarget.lon, lat: flyTarget.lat, zoom: flyTarget.zoom, label: flyTarget.label });
     setFlyTarget(null);
   }, [flyTarget, setFlyTarget]);
 
@@ -990,13 +1077,36 @@ export function MapCanvas({
     const t = THEATER_BY_ID[theaterId];
     const map = mapRef.current;
     if (!map || !ready.current || !t) return;
-    map.fitBounds([[t.west, t.south], [t.east, t.north]], { padding: 40, duration: 700, maxZoom: t.zoom });
+    map.fitBounds([[t.west, t.south], [t.east, t.north]], { padding: 40, duration: 1600, maxZoom: t.zoom, pitch: 6, essential: true });
   }, [theaterId]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady || !orbitOn) return;
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      map.setBearing(map.getBearing() + dt * 5.5);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    const stop = () => setOrbitOn(false);
+    map.on("mousedown", stop);
+    map.on("wheel", stop);
+    return () => {
+      cancelAnimationFrame(raf);
+      map.off("mousedown", stop);
+      map.off("wheel", stop);
+    };
+  }, [orbitOn, mapReady, setOrbitOn]);
 
   const grain =
     imagery === "s2" ? `S2 HLS ${date}` :
     imagery === "viirs" ? `VIIRS ${date}` :
     imagery === "s2cloudless" ? "S2 mosaic 2024" :
+    imagery === "gmaps" ? "Google satellite" :
     imagery === "dark" ? "Dark context" : "High-res Esri";
 
   return (
@@ -1005,6 +1115,7 @@ export function MapCanvas({
         <StaticSatellite date={date} boxes={boxes} firms={firms} flights={flights} onPick={setSelectedSite} />
       ) : null}
       <div ref={host} className={cn("h-full w-full", engine !== "gl" && "pointer-events-none opacity-0")} />
+      {engine === "gl" && mapReady ? <LookFx mapRef={mapRef} flights={flights} detections={detections} /> : null}
       <div className="pointer-events-none absolute bottom-28 left-3 hidden rounded-full border border-border bg-bg/80 px-2.5 py-1 font-mono text-[11px] tabular-nums text-muted md:block">
         {cursor}
         <span className="mx-1.5 text-subtle">·</span>

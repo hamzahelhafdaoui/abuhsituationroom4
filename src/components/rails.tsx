@@ -19,6 +19,9 @@ import {
 import { ALERTS, CITATIONS, OBSERVATIONS, SITES } from "@/data/catalog";
 import { exportBriefing, exportCsv, exportGeoJSON } from "@/lib/export";
 import { SEED_REPORTS, imageryLinks, type OsintReport } from "@/lib/osint";
+import { RSF_WATCH } from "@/data/rsf-watch";
+import { mergeFlags, reportsToFlags, alertsToFlags, detectToFlags, type Flag, type ListOrder } from "@/lib/flags";
+import type { DetectHit } from "@/lib/imagery-detect";
 import type { Sitrep } from "@/lib/sitrep";
 import type { BriefingDoc } from "@/lib/briefing";
 import type { FuaeRecord } from "@/lib/fuae";
@@ -30,6 +33,7 @@ import {
   NewsPanel,
   ReportDetail,
   ReportsList,
+  RsfWatchPanel,
 } from "@/components/monitor-panels";
 import {
   CONFIDENCE_RUBRIC,
@@ -204,7 +208,7 @@ export function LeftRail(props: {
         <section>
           <h2 className="mb-2 text-xs font-medium uppercase tracking-wider text-subtle">Imagery</h2>
           <div className="flex flex-wrap gap-1">
-            {(["hires", "s2cloudless", "viirs", "dark", "s2"] as const).map((id) => (
+            {(["hires", "gmaps", "s2cloudless", "viirs", "dark", "s2"] as const).map((id) => (
               <button
                 key={id}
                 type="button"
@@ -261,6 +265,7 @@ export function LeftRail(props: {
               ["osm", "OSM / airfields", Shield],
               ["vessels", "Maritime nodes", Ship],
               ["corridors", "Reported corridors", Eye],
+              ["rsfWatch", "RSF watchlist", Shield],
               ["firms", "FIRMS thermal", Flame],
               ["flights", "Flights", Plane],
               ["thermalRaster", "GIBS thermal raster", Flame],
@@ -423,6 +428,8 @@ export function RightRail(props: {
   feedsMeta?: LiveMeta | null;
   fuae?: FuaeRecord[];
   onOpenFuae?: (r: FuaeRecord) => void;
+  detections?: DetectHit[];
+  onOpenFlag?: (f: Flag) => void;
 }) {
   const {
     alerts, sites, selectedAlert, selectedSite, siteParty, siteObs, reviews,
@@ -431,6 +438,8 @@ export function RightRail(props: {
     news, newsLoading, brief, briefLoading, onRunBrief, sitrep, feeds, feedsMeta, briefingDoc, onOpenAnno,
     fuae, onOpenFuae,
   } = props;
+  const detections = props.detections ?? [];
+  const onOpenFlag = props.onOpenFlag;
   const selectedReportId = useAppStore((s) => s.selectedReportId);
   const addingReport = useAppStore((s) => s.addingReport);
   const customReports = useAppStore((s) => s.customReports);
@@ -589,6 +598,8 @@ export function RightRail(props: {
       onOpenAnno={onOpenAnno}
       fuae={fuae ?? []}
       onOpenFuae={onOpenFuae}
+      detections={detections}
+      onOpenFlag={onOpenFlag}
     />
   );
 }
@@ -596,7 +607,7 @@ export function RightRail(props: {
 function QueueOrLog({
   alerts, reviews, reviewFilter, setReviewFilter, setSelectedAlert, setSelectedSite,
   news, newsLoading, brief, briefLoading, onRunBrief, sitrep, reports, onSelectReport, onAddReport,
-  feeds, feedsMeta, briefingDoc, onOpenAnno, fuae, onOpenFuae,
+  feeds, feedsMeta, briefingDoc, onOpenAnno, fuae, onOpenFuae, detections, onOpenFlag,
 }: {
   alerts: typeof ALERTS;
   reviews: Record<string, { state: ReviewState; note: string; confidence: Confidence; at: string }>;
@@ -619,17 +630,35 @@ function QueueOrLog({
   onOpenAnno?: (id: string) => void;
   fuae: FuaeRecord[];
   onOpenFuae?: (r: FuaeRecord) => void;
+  detections: DetectHit[];
+  onOpenFlag?: (f: Flag) => void;
 }) {
   const rightTab = useAppStore((s) => s.rightTab);
   const setRightTab = useAppStore((s) => s.setRightTab);
+  const listOrder = useAppStore((s) => s.listOrder);
+  const setListOrder = useAppStore((s) => s.setListOrder);
+  const reviewAlert = useAppStore((s) => s.reviewAlert);
+  const trainModel = useAppStore((s) => s.trainModel);
+  const setImagery = useAppStore((s) => s.setImagery);
+  const [kind, setKind] = useState<"all" | "published" | "auto" | "archive">("all");
+  const flags = mergeFlags(
+    [reportsToFlags(reports), detectToFlags(detections), alertsToFlags(alerts)],
+    listOrder,
+  ).filter((f) => {
+    if (kind !== "all" && f.kind !== kind) return false;
+    if (reviewFilter === "all") return true;
+    const state = reviews[f.id]?.state ?? f.review;
+    return state === reviewFilter;
+  });
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-wrap items-center gap-1 px-3 pt-3">
         {([
           ["news", "News"],
           ["fuae", "FUAE"],
+          ["rsf", "RSF"],
           ["log", "Log"],
-          ["queue", "Queue"],
+          ["queue", "Flags"],
           ["brief", "Brief"],
           ["reports", "Reports"],
           ["feeds", "Feeds"],
@@ -650,24 +679,14 @@ function QueueOrLog({
             {id === "news" && news?.items.length ? (
               <span className="ml-1 font-mono tabular-nums text-[10px] opacity-80">{news.items.length}</span>
             ) : null}
-            {id === "fuae" && fuae.length ? (
-              <span className="ml-1 font-mono tabular-nums text-[10px] opacity-80">{fuae.length}</span>
+            {id === "rsf" ? (
+              <span className="ml-1 font-mono tabular-nums text-[10px] opacity-80">{RSF_WATCH.length}</span>
+            ) : null}
+            {id === "queue" && flags.length ? (
+              <span className="ml-1 font-mono tabular-nums text-[10px] opacity-80">{flags.length}</span>
             ) : null}
           </button>
         ))}
-        {rightTab === "queue" ? (
-          <select
-            value={reviewFilter}
-            onChange={(e) => setReviewFilter(e.target.value as ReviewState | "all")}
-            className="ml-auto h-8 rounded-md border border-border bg-raised px-2 text-xs"
-          >
-            <option value="all">All</option>
-            <option value="unreviewed">Unreviewed</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="rejected">Rejected</option>
-            <option value="needs_imagery">Needs imagery</option>
-          </select>
-        ) : null}
       </div>
       {rightTab === "log" ? (
         <ChangeLogList onOpenSite={setSelectedSite} />
@@ -681,57 +700,182 @@ function QueueOrLog({
         <FeedsPanel items={feeds} meta={feedsMeta} />
       ) : rightTab === "fuae" ? (
         <FuaePanel rows={fuae} onOpen={onOpenFuae ?? (() => {})} />
+      ) : rightTab === "rsf" ? (
+        <RsfWatchPanel
+          onOpen={(w) => {
+            onOpenFlag?.({
+              id: w.id,
+              title: w.name,
+              body: w.note,
+              lat: w.lat,
+              lon: w.lon,
+              date: `${w.lastSeen}T00:00:00Z`,
+              type: "change",
+              kind: "published",
+              sourceLabel: w.sourceLabel,
+              url: w.sourceUrl,
+              confidence: 2,
+              families: ["reporting"],
+              siteId: w.siteId,
+              review: "unreviewed",
+            });
+            if (w.siteId) setSelectedSite(w.siteId);
+          }}
+        />
       ) : (
-        <ul className="flex-1 overflow-y-auto px-3 py-2">
-          {alerts.length === 0 ? (
-            <li className="p-3 text-sm text-muted">
-              Nothing in this filter. Open Change log for the full first-seen record.
-            </li>
-          ) : (
-            alerts.map((a) => {
-              const state = reviews[a.id]?.state ?? a.review;
-              return (
-                <li key={a.id}>
+        <div className="flex min-h-0 flex-1 flex-col">
+          <p className="px-3 pt-2 text-[11px] leading-snug text-subtle">
+            Searcher flags: published OSINT first (@AfriMEOSINT and archive posts), then auto chips. Newest on top. Observation, not identification.
+          </p>
+          <div className="flex flex-wrap items-center gap-1 px-3 pt-2">
+            <OrderToggle order={listOrder} onChange={setListOrder} />
+            {(["all", "published", "auto", "archive"] as const).map((id) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setKind(id)}
+                className={cn(
+                  "h-7 rounded-full border px-2 text-[11px]",
+                  kind === id ? "border-accent bg-accent text-accent-fg" : "border-border text-muted",
+                )}
+              >
+                {id === "all" ? "All" : id === "published" ? "Published" : id === "auto" ? "Auto chips" : "Archive"}
+              </button>
+            ))}
+            <select
+              value={reviewFilter}
+              onChange={(e) => setReviewFilter(e.target.value as ReviewState | "all")}
+              className="ml-auto h-7 rounded-md border border-border bg-raised px-2 text-[11px]"
+            >
+              <option value="all">All review</option>
+              <option value="unreviewed">Unreviewed</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="rejected">Rejected</option>
+              <option value="needs_imagery">Needs imagery</option>
+            </select>
+          </div>
+          <ul className="flex-1 overflow-y-auto px-3 py-2">
+            {flags.length === 0 ? (
+              <li className="p-3 text-sm text-muted">Nothing in this filter.</li>
+            ) : (
+              flags.map((f) => (
+                <li key={f.id}>
                   <button
                     type="button"
                     onClick={() => {
-                      setSelectedAlert(a.id);
-                      const first = a.siteIds[0];
-                      if (first) setSelectedSite(first);
+                      onOpenFlag?.(f);
+                      if (ALERTS.some((a) => a.id === f.id)) {
+                        setSelectedAlert(f.id);
+                        if (f.siteId) setSelectedSite(f.siteId);
+                      }
                     }}
                     className="mb-1.5 w-full rounded-xl border border-border bg-surface/60 p-3 text-left hover:bg-raised"
                   >
                     <span className="flex items-start justify-between gap-2">
-                      <span className="font-medium leading-snug">{a.title}</span>
-                      <ConfidencePips value={a.confidence} />
+                      <span className="font-medium leading-snug">{f.title}</span>
+                      <span className={cn(
+                        "shrink-0 rounded-sm px-1.5 py-0.5 font-mono text-[9px] tracking-wide",
+                        f.kind === "published" ? "bg-accent text-accent-fg" : f.kind === "auto" ? "bg-raised text-fg" : "text-subtle",
+                      )}>
+                        {f.kind === "published" ? "PUB" : f.kind === "auto" ? "AUTO" : "ARC"}
+                      </span>
                     </span>
+                    <span className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted">{f.body}</span>
                     <span className="mt-1.5 flex items-center gap-2 text-xs text-subtle">
-                      <span className="capitalize">{a.type.replace("_", " ")}</span>
-                      <span>{state}</span>
+                      <span className="font-mono tabular-nums">{f.date.slice(0, 10)}</span>
+                      <span>{f.sourceLabel}</span>
+                      <span className="capitalize">{String(f.type).replace("_", " ")}</span>
+                    </span>
+                    <span className="mt-2 flex flex-wrap gap-1">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          reviewAlert(f.id, "confirmed", "human verify", f.confidence);
+                          if (f.features && f.modelKlass) trainModel(f.features, f.modelKlass, true);
+                        }}
+                        className="rounded-md border border-border px-1.5 py-0.5 font-mono text-[10px] text-fg hover:bg-raised"
+                      >
+                        Confirm
+                      </span>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          reviewAlert(f.id, "rejected", "human reject", f.confidence);
+                          if (f.features && f.modelKlass) trainModel(f.features, f.modelKlass, false);
+                        }}
+                        className="rounded-md border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted hover:bg-raised"
+                      >
+                        Reject
+                      </span>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenFlag?.(f);
+                          setImagery("hires");
+                        }}
+                        className="rounded-md border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted hover:bg-raised"
+                      >
+                        Esri
+                      </span>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenFlag?.(f);
+                          setImagery("gmaps");
+                        }}
+                        className="rounded-md border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted hover:bg-raised"
+                      >
+                        Google
+                      </span>
                     </span>
                   </button>
                 </li>
-              );
-            })
-          )}
-        </ul>
+              ))
+            )}
+          </ul>
+        </div>
       )}
     </div>
+  );
+}
+
+function OrderToggle({ order, onChange }: { order: ListOrder; onChange: (o: ListOrder) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(order === "newest" ? "oldest" : "newest")}
+      className="h-7 rounded-full border border-border px-2.5 font-mono text-[11px] text-fg"
+      title="Toggle newest / oldest"
+    >
+      {order === "newest" ? "Newest first" : "Oldest first"}
+    </button>
   );
 }
 
 function ChangeLogList({ onOpenSite }: { onOpenSite: (id: string) => void }) {
   const rows = useAppStore((s) => s.changeLog);
   const lastSweepAt = useAppStore((s) => s.lastSweepAt);
+  const listOrder = useAppStore((s) => s.listOrder);
+  const setListOrder = useAppStore((s) => s.setListOrder);
   const [fam, setFam] = useState<"all" | "vehicles" | "flight" | "corridor" | "damage" | "morphology" | "thermal" | "reporting">("all");
-  const shown = fam === "all" ? rows : rows.filter((e) => e.families.includes(fam));
+  const filtered = fam === "all" ? rows : rows.filter((e) => e.families.includes(fam));
+  const shown = listOrder === "newest" ? filtered : [...filtered].reverse();
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <p className="px-4 pt-2 text-[11px] leading-snug text-subtle">
-        {shown.length} records · oldest first-seen first. 2022–2026 public archive, not a live occupancy picture.
+        {shown.length} records · {listOrder === "newest" ? "newest" : "oldest"} first. Public archive, not live occupancy.
         {lastSweepAt ? ` Sweep ${lastSweepAt.slice(0, 16).replace("T", " ")}Z.` : ""}
       </p>
       <div className="flex flex-wrap gap-1 px-3 pt-2">
+        <OrderToggle order={listOrder} onChange={setListOrder} />
         {(["all", "vehicles", "flight", "corridor", "morphology", "damage", "thermal", "reporting"] as const).map((id) => (
           <button
             key={id}

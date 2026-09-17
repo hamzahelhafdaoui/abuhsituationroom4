@@ -6,7 +6,10 @@ import type { ControlUpdate } from "@/lib/control";
 import { partyToFaction } from "@/lib/control";
 import type { OsintReport } from "@/lib/osint";
 import type { FuaeRecord } from "@/lib/fuae";
+import { DEFAULT_WEIGHTS, trainChip, type ChipFeatures, type ModelKlass } from "@/lib/chip-model";
+import type { ListOrder } from "@/lib/flags";
 import type { TheaterId } from "@/lib/theaters";
+import type { LookId } from "@/lib/looks";
 import { daysAgo } from "@/lib/utils";
 import type {
   AuditEntry,
@@ -32,9 +35,10 @@ export type LayerKey =
   | "gdelt"
   | "osm"
   | "vessels"
-  | "corridors";
+  | "corridors"
+  | "rsfWatch";
 
-export type RightTab = "log" | "queue" | "news" | "brief" | "reports" | "feeds" | "fuae";
+export type RightTab = "log" | "queue" | "news" | "brief" | "reports" | "feeds" | "fuae" | "rsf";
 
 export interface FlyTarget {
   lat: number;
@@ -90,6 +94,7 @@ interface AppState {
   flyTarget: FlyTarget | null;
   dateLock: boolean;
   fuaeLog: FuaeRecord[];
+  listOrder: ListOrder;
   setSelectedSite: (id: string | null) => void;
   setSelectedAlert: (id: string | null) => void;
   setFocusedBox: (id: string | null) => void;
@@ -123,6 +128,13 @@ interface AppState {
   setFlyTarget: (t: FlyTarget | null) => void;
   setDateLock: (v: boolean) => void;
   ingestFuae: (rows: FuaeRecord[]) => void;
+  setListOrder: (o: ListOrder) => void;
+  modelWeights: typeof DEFAULT_WEIGHTS;
+  trainModel: (features: ChipFeatures, klass: ModelKlass, confirmed: boolean) => void;
+  look: LookId;
+  setLook: (l: LookId) => void;
+  orbitOn: boolean;
+  setOrbitOn: (v: boolean) => void;
 }
 
 function stamp(): string {
@@ -177,6 +189,7 @@ export const useAppStore = create<AppState>()(
         osm: false,
         vessels: true,
         corridors: true,
+        rsfWatch: true,
       },
       imagery: "s2cloudless",
       date: daysAgo(4),
@@ -195,14 +208,18 @@ export const useAppStore = create<AppState>()(
       customReports: [],
       selectedReportId: null,
       addingReport: false,
-      rightTab: "news",
+      rightTab: "queue",
       hudOn: true,
       detectOn: true,
+      look: "none",
+      orbitOn: false,
       theaterId: "sdn",
       controlUpdates: [],
       flyTarget: null,
       dateLock: false,
       fuaeLog: [],
+      listOrder: "newest",
+      modelWeights: DEFAULT_WEIGHTS,
       setSelectedSite: (id) => set({ selectedSiteId: id, focusedBoxId: null, selectedReportId: null }),
       setSelectedAlert: (id) => set({ selectedAlertId: id }),
       setFocusedBox: (id) => set({ focusedBoxId: id, selectedSiteId: null, selectedAlertId: null }),
@@ -302,6 +319,8 @@ export const useAppStore = create<AppState>()(
       setRightTab: (t) => set({ rightTab: t, addingReport: false }),
       setHudOn: (hudOn) => set({ hudOn }),
       setDetectOn: (detectOn) => set({ detectOn }),
+      setLook: (look) => set((s) => ({ look, hudOn: look === "none" ? s.hudOn : true })),
+      setOrbitOn: (orbitOn) => set({ orbitOn }),
       setTheater: (theaterId) => set({ theaterId }),
       addControlUpdate: (u) =>
         set((s) => ({ controlUpdates: [u, ...s.controlUpdates].slice(0, 80) })),
@@ -320,6 +339,12 @@ export const useAppStore = create<AppState>()(
             fuaeLog: [...map.values()].sort((a, b) => b.lastSeen.localeCompare(a.lastSeen)).slice(0, 200),
           };
         }),
+      setListOrder: (listOrder) => set({ listOrder }),
+      trainModel: (features, klass, confirmed) =>
+        set((s) => ({
+          modelWeights: trainChip(s.modelWeights, features, klass, confirmed),
+          audit: [audit("chip-train", klass, confirmed ? "confirm" : "reject"), ...s.audit].slice(0, 200),
+        })),
     }),
     {
       name: "ahsr-sudan-v2",
@@ -340,6 +365,9 @@ export const useAppStore = create<AppState>()(
         controlUpdates: s.controlUpdates,
         dateLock: s.dateLock,
         fuaeLog: s.fuaeLog,
+        listOrder: s.listOrder,
+        modelWeights: s.modelWeights,
+        look: s.look,
       }),
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<AppState>;
@@ -361,8 +389,13 @@ export const useAppStore = create<AppState>()(
             osm: p.layers?.osm ?? false,
             gdelt: p.layers?.gdelt ?? true,
             corridors: p.layers?.corridors ?? true,
+            rsfWatch: p.layers?.rsfWatch ?? true,
           },
           controlUpdates: p.controlUpdates ?? [],
+          fuaeLog: p.fuaeLog ?? [],
+          listOrder: p.listOrder === "oldest" ? "oldest" : "newest",
+          modelWeights: p.modelWeights ?? DEFAULT_WEIGHTS,
+          look: p.look === "crt" || p.look === "nvg" || p.look === "flir" || p.look === "noir" || p.look === "snow" ? p.look : "none",
           helpOpen: false,
           helpSeen: Boolean(p.helpSeen) || p.helpOpen === false,
         };

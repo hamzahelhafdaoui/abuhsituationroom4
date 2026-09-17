@@ -87,9 +87,9 @@ export function seedChangeLog(): ChangeEntry[] {
 
 export function sortLog(rows: ChangeEntry[]): ChangeEntry[] {
   return [...rows].sort((a, b) => {
-    const c = a.firstSeen.localeCompare(b.firstSeen);
+    const c = b.firstSeen.localeCompare(a.firstSeen);
     if (c !== 0) return c;
-    return a.id.localeCompare(b.id);
+    return b.id.localeCompare(a.id);
   });
 }
 

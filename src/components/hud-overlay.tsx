@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import type { LookId } from "@/lib/looks";
+import type { SlewDetail, SlewPhase } from "@/lib/spy-cam";
 
 function zulu(now: Date) {
   return now.toISOString().slice(11, 19) + "Z";
@@ -8,12 +10,21 @@ function zulu(now: Date) {
 
 export function SitroomFx() {
   const hudOn = useAppStore((s) => s.hudOn);
+  const look = useAppStore((s) => s.look);
+  const [slew, setSlew] = useState<SlewDetail>({ phase: "idle" });
+  useEffect(() => {
+    const on = (e: Event) => setSlew((e as CustomEvent<SlewDetail>).detail);
+    window.addEventListener("ahsr-slew", on);
+    return () => window.removeEventListener("ahsr-slew", on);
+  }, []);
   if (!hudOn) return null;
+  const cssFx = look === "none";
+  const slewing = slew.phase === "slewing" || slew.phase === "lock";
   return (
     <>
-      <div className="sitroom-vignette" />
-      <div className="sitroom-scanlines" />
-      <div className="sitroom-crosshair" aria-hidden="true">
+      {cssFx ? <div className="sitroom-vignette" /> : null}
+      {cssFx ? <div className="sitroom-scanlines" /> : null}
+      <div className={cn("sitroom-crosshair", slewing && "is-slew")} aria-hidden="true">
         <span className="ch-h" />
         <span className="ch-v" />
         <span className="ch-box" />
@@ -24,15 +35,55 @@ export function SitroomFx() {
         <i className="bl" />
         <i className="br" />
       </div>
+      {slewing ? <SlewOverlay phase={slew.phase} label={slew.label} duration={slew.duration} /> : null}
     </>
   );
 }
 
-export function SensorBar() {
+function SlewOverlay({
+  phase,
+  label,
+  duration,
+}: {
+  phase: SlewPhase;
+  label?: string;
+  duration?: number;
+}) {
+  return (
+    <div className="spy-slew" aria-hidden="true">
+      <span className="spy-ring r1" />
+      <span className="spy-ring r2" />
+      <span className="spy-ring r3" />
+      <span className="spy-scan" />
+      <span className="spy-bracket" />
+      <div className="spy-status">
+        <span className={phase === "lock" ? "text-accent" : "live-pulse"}>
+          {phase === "lock" ? "LOCK" : "SLEWING"}
+        </span>
+        {label ? <span className="ml-2 text-fg">{label}</span> : null}
+        {phase === "slewing" && duration ? (
+          <span className="ml-2 text-subtle">{(duration / 1000).toFixed(1)}s</span>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+export function SensorBar({
+  docsOpen,
+  onDocs,
+}: {
+  docsOpen?: boolean;
+  onDocs?: () => void;
+}) {
   const hudOn = useAppStore((s) => s.hudOn);
   const setHudOn = useAppStore((s) => s.setHudOn);
   const detectOn = useAppStore((s) => s.detectOn);
   const setDetectOn = useAppStore((s) => s.setDetectOn);
+  const look = useAppStore((s) => s.look);
+  const setLook = useAppStore((s) => s.setLook);
+  const orbitOn = useAppStore((s) => s.orbitOn);
+  const setOrbitOn = useAppStore((s) => s.setOrbitOn);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -45,10 +96,26 @@ export function SensorBar() {
         e.preventDefault();
         setDetectOn(!useAppStore.getState().detectOn);
       }
+      if (e.key === "o" || e.key === "O") {
+        e.preventDefault();
+        setOrbitOn(!useAppStore.getState().orbitOn);
+      }
+      if (e.key === "q" || e.key === "Q") {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("sahel-map-nudge", { detail: { bearing: -18 } }));
+      }
+      if (e.key === "e" || e.key === "E") {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("sahel-map-nudge", { detail: { bearing: 18 } }));
+      }
+      if (e.key === "r" || e.key === "R") {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("sahel-map-nudge", { detail: { reset: true } }));
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [setHudOn, setDetectOn]);
+  }, [setHudOn, setDetectOn, setOrbitOn]);
 
   return (
     <div className="hud-panel hud-panel-bracket pointer-events-auto flex items-center gap-1 p-1">
@@ -73,6 +140,44 @@ export function SensorBar() {
       >
         DET
       </button>
+      <button
+        type="button"
+        title="Slow satellite orbit around the current target (O)"
+        onClick={() => setOrbitOn(!orbitOn)}
+        className={cn(
+          "h-8 rounded-sm px-2 font-mono text-[10px] tracking-wider",
+          orbitOn ? "text-accent" : "text-muted hover:text-fg",
+        )}
+      >
+        ORBIT
+      </button>
+      {(["crt", "nvg", "flir"] as LookId[]).map((id) => (
+        <button
+          key={id}
+          type="button"
+          title={`${id.toUpperCase()} sensor look`}
+          onClick={() => setLook(look === id ? "none" : id)}
+          className={cn(
+            "h-8 rounded-sm px-2 font-mono text-[10px] tracking-wider",
+            look === id ? "text-accent" : "text-muted hover:text-fg",
+          )}
+        >
+          {id.toUpperCase()}
+        </button>
+      ))}
+      {onDocs ? (
+        <button
+          type="button"
+          title="Open briefs, logs, news, FUAE"
+          onClick={onDocs}
+          className={cn(
+            "h-8 rounded-sm px-2 font-mono text-[10px] tracking-wider",
+            docsOpen ? "bg-accent text-accent-fg" : "text-muted hover:text-fg",
+          )}
+        >
+          DOCS
+        </button>
+      ) : null}
     </div>
   );
 }

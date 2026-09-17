@@ -1,5 +1,7 @@
 import { SITES } from "@/data/catalog";
+import { CONTROL_CITIES } from "@/lib/control";
 import { huntsFromKlass, isForeignLinked, matchHunts, type HuntId } from "@/lib/hunt";
+import { osmVerdictFor } from "@/lib/osm-ai";
 import { SEED_REPORTS } from "@/lib/osint";
 import { inBbox, nearest, padBbox } from "@/lib/geo";
 import { TECHNIQUE_BY_ID } from "@/lib/techniques";
@@ -14,6 +16,8 @@ import type {
   VesselEvent,
   WatchBox,
 } from "@/lib/types";
+import { DEFAULT_WEIGHTS, featuresFromShape, modelToKlass, predictChip } from "@/lib/chip-model";
+import { useAppStore } from "@/lib/store";
 import { snapshotUrl } from "@/lib/utils";
 
 export type DetectKlass =
@@ -32,7 +36,11 @@ export type DetectKlass =
   | "crossing_cue"
   | "maritime"
   | "corridor_track"
-  | "reporting_cue";
+  | "reporting_cue"
+  | "burn_scar"
+  | "wreck_air"
+  | "wreck_bldg"
+  | "camp_buildup";
 
 export const DETECT_KLASS: Record<
   DetectKlass,
@@ -54,6 +62,10 @@ export const DETECT_KLASS: Record<
   maritime: { label: "Port / ship cue", short: "SEA", color: "#6a8ea8" },
   corridor_track: { label: "Desert track / well", short: "TRACK", color: "#a09070" },
   reporting_cue: { label: "Reporting cue", short: "WIRE", color: "#9a8a78" },
+  burn_scar: { label: "Burn / scorch cue", short: "BURN", color: "#c46a3a" },
+  wreck_air: { label: "Airframe / hangar damage cue", short: "WRECK", color: "#b07050" },
+  wreck_bldg: { label: "Building scrape cue", short: "RUBBLE", color: "#a08060" },
+  camp_buildup: { label: "Camp / makeshift-base buildup", short: "CAMP+", color: "#c4a35a" },
 };
 
 export type CloudClass = "clear" | "mixed" | "cloudy" | "unknown";
@@ -80,6 +92,15 @@ export interface DetectHit {
   change?: number;
   date: string;
   compareDate: string;
+  features?: {
+    blobs: number;
+    hv: number;
+    edge: number;
+    exg: number;
+    red: number;
+    delta: number;
+    meanL: number;
+  };
 }
 
 export interface DetectReport {
@@ -87,6 +108,8 @@ export interface DetectReport {
   ranAt: string;
   opticalTried: number;
   opticalOk: number;
+  gridTried: number;
+  gridHits: number;
   note: string;
 }
 
@@ -137,6 +160,16 @@ function isNonArmyCue(s: (typeof SITES)[number]) {
   return s.kind === "compound" || s.kind === "strip" || s.kind === "logistics";
 }
 
+function partyHunts(party: string, lat: number, lon: number): HuntId[] {
+  const out: HuntId[] = [];
+  if (party === "saf") out.push("saf");
+  if (party === "rsf") out.push("rsf");
+  const city = nearest(lat, lon, CONTROL_CITIES, 55);
+  if (city?.item.faction === "saf" && !out.includes("saf")) out.push("saf");
+  if (city?.item.faction === "rsf" && !out.includes("rsf")) out.push("rsf");
+  return out;
+}
+
 function lonLatToTile(lon: number, lat: number, z: number) {
   const n = 2 ** z;
   const x = Math.floor(((lon + 180) / 360) * n);
@@ -167,12 +200,12 @@ async function loadMorphChip(
   lon: number,
   bbox: { west: number; south: number; east: number; north: number },
 ): Promise<{ im: ImageData | null; layer: string }> {
-  const esri = await loadChip(esriExportUrl(bbox));
-  if (esri) return { im: esri, layer: "Esri" };
-  const tile = await loadChip(esriTileUrl(lat, lon, 15));
+  const tile = await loadChip(esriTileUrl(lat, lon, 15), 4500);
   if (tile) return { im: tile, layer: "Esri tile" };
-  const s2 = await loadChip(s2TileUrl(lat, lon, 13));
-  return { im: s2, layer: s2 ? "S2 mosaic" : "none" };
+  const s2 = await loadChip(s2TileUrl(lat, lon, 13), 4000);
+  if (s2) return { im: s2, layer: "S2 mosaic" };
+  const esri = await loadChip(esriExportUrl(bbox), 4000);
+  return { im: esri, layer: esri ? "Esri" : "none" };
 }
 
 async function loadDatedChip(
@@ -196,11 +229,11 @@ function explain(ids: string[]): string {
     .join(" ");
 }
 
-function loadChip(url: string): Promise<ImageData | null> {
+function loadChip(url: string, timeoutMs = 5000): Promise<ImageData | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
-    const t = window.setTimeout(() => resolve(null), 9000);
+    const t = window.setTimeout(() => resolve(null), timeoutMs);
     img.onload = () => {
       window.clearTimeout(t);
       try {
@@ -377,11 +410,12 @@ export function fuseDetect(args: {
   const seen = new Set<string>();
   let morphQueued = 0;
 
-  const push = (h: Omit<DetectHit, "hunts"> & { hunts?: HuntId[] }) => {
+  const push = (h: Omit<DetectHit, "hunts"> & { hunts?: HuntId[]; party?: string }) => {
     if (seen.has(h.id)) return;
     seen.add(h.id);
-    const hunts = [...new Set(h.hunts?.length ? h.hunts : huntsFromKlass(h.klass))];
-    hits.push({ ...h, hunts });
+    const { party, hunts: given, ...rest } = h;
+    const hunts = [...new Set([...(given?.length ? given : huntsFromKlass(rest.klass)), ...partyHunts(party ?? "unknown", rest.lat, rest.lon)])];
+    hits.push({ ...rest, hunts });
   };
 
   const HUNT_KINDS = new Set(["airfield", "strip", "compound", "logistics", "port", "camp", "crossing", "well"]);
@@ -422,6 +456,7 @@ export function fuseDetect(args: {
         techniques: ["damage", "buildings", "xai"],
         explain: explain(["damage", "buildings"]),
         hunts: site.kind === "hospital" || site.kind === "market" ? ["bda", "wire"] : ["bda"],
+        party: site.party,
         siteId: site.id,
         cloud: "unknown",
         date,
@@ -510,7 +545,9 @@ export function fuseDetect(args: {
       const hunts: HuntId[] = huntsFromKlass(klass);
       if (fx) hunts.push("fx");
       if (irregular) hunts.push("irreg");
+      if (site.kind === "well" || /kufra|libya|darfur/i.test(`${site.name} ${site.notes}`)) hunts.push("chain");
       const bbox = boxOf(site.lat, site.lon, site.kind === "airfield" ? 0.08 : 0.045);
+      const verdict = osmVerdictFor(site.lat, site.lon, SITES, osm, false);
       push({
         id: `det-morph-${site.id}`,
         klass,
@@ -523,15 +560,16 @@ export function fuseDetect(args: {
           ? `Not a national-army identification (${region ?? "ETH/TCD"}). Chip looks for pads, tents, yards, compact objects on the public pin. Humanitarian and commercial use remain the baseline until a movement chain is shown.`
           : fx
             ? "Public foreign-linked node. Pin is the published facility — not a cargo or occupancy claim. Chip looks for yards, aprons, pads."
-            : `GEOINT chip (${DETECT_KLASS[klass].label}). Pads, yards, berms, compact objects, possible staging — not a base or weapons identification.`,
+            : `GEOINT chip (${DETECT_KLASS[klass].label}). OSM-AI ${verdict}: ${verdict === "missed" ? "no OSM military/aerodrome nearby." : verdict === "existing" ? "OSM already maps a feature here." : "not in archive."} Pads, yards, berms, compact objects — not a base or weapons identification.`,
         lat: site.lat,
         lon: site.lon,
         ...bbox,
         confidence: irregular || fx ? 2 : 1,
         families: irregular || fx ? ["morphology", "corridor"] : ["morphology"],
-        techniques: ["chip", "buildings", "obb", "xai"],
+        techniques: ["chip", "buildings", "obb", "xai", "weak"],
         explain: explain(["chip", "buildings"]),
         hunts,
+        party: site.party,
         siteId: site.id,
         cloud: "unknown",
         date,
@@ -683,6 +721,7 @@ export function fuseDetect(args: {
       techniques: ["fusion", "xai", r.category === "strike-damage" ? "damage" : "obb"],
       explain: explain(["fusion", "xai"]),
       hunts,
+      party: r.party,
       cloud: "unknown",
       date,
       compareDate,
@@ -979,6 +1018,250 @@ function pool<T, R>(items: T[], n: number, fn: (t: T) => Promise<R>): Promise<R[
   return Promise.all(workers).then(() => out);
 }
 
+type SweepMode = "urban" | "desert";
+
+interface SweepSector {
+  id: string;
+  name: string;
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+  step: number;
+  mode: SweepMode;
+}
+
+/** Blank-tile hunt — not Twitter. Rotates so each cycle looks at a new slice of desert/city. */
+const SWEEP_SECTORS: SweepSector[] = [
+  { id: "fasher", name: "El Fasher ring", west: 24.9, south: 13.2, east: 25.7, north: 13.95, step: 0.11, mode: "urban" },
+  { id: "nyala", name: "Nyala ring", west: 24.65, south: 11.8, east: 25.25, north: 12.35, step: 0.1, mode: "urban" },
+  { id: "geneina", name: "Geneina–Adré", west: 21.7, south: 13.2, east: 22.7, north: 13.85, step: 0.12, mode: "urban" },
+  { id: "khartoum-out", name: "Khartoum outskirts", west: 32.15, south: 15.25, east: 32.9, north: 16.05, step: 0.1, mode: "urban" },
+  { id: "port-sudan", name: "Port Sudan yards", west: 36.75, south: 19.05, east: 37.45, north: 19.85, step: 0.12, mode: "urban" },
+  { id: "el-obeid", name: "El Obeid / Kordofan", west: 29.85, south: 12.85, east: 30.55, north: 13.45, step: 0.1, mode: "urban" },
+  { id: "kufra-south", name: "Kufra south tracks", west: 22.7, south: 21.4, east: 24.3, north: 24.35, step: 0.28, mode: "desert" },
+  { id: "se-libya-camp", name: "SE Libya camp box", west: 22.0, south: 21.7, east: 23.5, north: 22.9, step: 0.12, mode: "desert" },
+  { id: "blue-nile", name: "Blue Nile / Kurmuk", west: 33.85, south: 10.15, east: 34.55, north: 11.05, step: 0.1, mode: "desert" },
+  { id: "n-darfur-out", name: "N Darfur wadis", west: 24.3, south: 13.0, east: 26.5, north: 14.7, step: 0.22, mode: "desert" },
+  { id: "s-darfur-out", name: "S Darfur ring", west: 24.1, south: 11.35, east: 25.7, north: 12.7, step: 0.18, mode: "desert" },
+  { id: "w-kordofan", name: "W Kordofan tracks", west: 27.1, south: 11.1, east: 29.9, north: 13.3, step: 0.28, mode: "desert" },
+  { id: "asosa-menge", name: "Asosa / Menge", west: 34.15, south: 9.85, east: 34.95, north: 11.25, step: 0.12, mode: "desert" },
+  { id: "adre-amd", name: "Adré–Amdjarass", west: 21.35, south: 13.15, east: 22.7, north: 16.3, step: 0.22, mode: "desert" },
+  { id: "dongola", name: "Dongola north", west: 30.15, south: 18.7, east: 31.25, north: 19.7, step: 0.16, mode: "desert" },
+  { id: "white-nile", name: "Kosti / Rabak yards", west: 32.25, south: 12.85, east: 32.95, north: 13.55, step: 0.12, mode: "urban" },
+];
+
+function cellKey(lat: number, lon: number) {
+  return `${lat.toFixed(3)}:${lon.toFixed(3)}`;
+}
+
+function sweepCells(known: { lat: number; lon: number }[]): { lat: number; lon: number; sector: SweepSector }[] {
+  const out: { lat: number; lon: number; sector: SweepSector }[] = [];
+  const seen = new Set<string>();
+  for (const sector of SWEEP_SECTORS) {
+    for (let lat = sector.south + sector.step / 2; lat < sector.north; lat += sector.step) {
+      for (let lon = sector.west + sector.step / 2; lon < sector.east; lon += sector.step) {
+        const k = cellKey(lat, lon);
+        if (seen.has(k)) continue;
+        const close = nearest(lat, lon, known, 7);
+        if (close) continue;
+        seen.add(k);
+        out.push({ lat, lon, sector });
+      }
+    }
+  }
+  const slot = Math.floor(Date.now() / 90_000);
+  return out
+    .map((c, i) => ({ c, k: (i * 17 + slot * 13) % 997 }))
+    .sort((a, b) => a.k - b.k)
+    .map((x) => x.c);
+}
+
+function classifyScan(
+  shape: { edge: number; blobs: number; hv: number },
+  sm: ChipStats,
+  delta: number,
+  cloud: CloudClass,
+  mode: SweepMode,
+): { klass: DetectKlass; confidence: Confidence; why: string } | null {
+  if (cloud === "cloudy") return null;
+  if (sm.n < 80) return null;
+  if (sm.exg > 0.11) return null;
+  const weights = useAppStore.getState().modelWeights ?? DEFAULT_WEIGHTS;
+  const pred = predictChip(featuresFromShape(shape, sm, delta), weights);
+  if (pred.klass !== "none" && pred.score > 0.15) {
+    const mapped = modelToKlass(pred.klass) as DetectKlass;
+    if (mapped === "burn_scar" || pred.klass === "burn") {
+      return {
+        klass: "burn_scar",
+        confidence: 2,
+        why: `Chip model (AfriMEOSINT priors + your reviews): burn/scorch cue. Δ ${delta.toFixed(3)} red ${sm.red.toFixed(3)}. Not a strike call.`,
+      };
+    }
+    if (pred.klass === "wreck_air") {
+      return {
+        klass: "wreck_air",
+        confidence: 2,
+        why: `Chip model: airframe/hangar damage cue. Confirm on Google/Esri. Not a destroyed-aircraft ID.`,
+      };
+    }
+    if (pred.klass === "wreck_bldg") {
+      return {
+        klass: "wreck_bldg",
+        confidence: 2,
+        why: `Chip model: building scrape/rubble cue. Roofs and phenology also trigger this.`,
+      };
+    }
+    if (pred.klass === "camp" && mode === "desert" && shape.blobs >= 4) {
+      return {
+        klass: "camp_buildup",
+        confidence: 2,
+        why: `Chip model: camp/staging morphology (${shape.blobs} compact objects, low veg). Makeshift-base candidate for human review — not an RSF/SAF ID.`,
+      };
+    }
+  }
+  if (mode === "urban") {
+    if (delta >= 0.14 && sm.red > 0.02) {
+      return {
+        klass: "burn_scar",
+        confidence: 2,
+        why: `Urban chip Δ ${delta.toFixed(3)} with redness up — burn/scrape cue, also phenology/roofs.`,
+      };
+    }
+    if (delta >= 0.16 && shape.hv >= 0.5) {
+      return {
+        klass: "wreck_bldg",
+        confidence: 2,
+        why: `Urban scrape geometry with dated change. Building-damage candidate for review.`,
+      };
+    }
+    if (shape.blobs >= 8 && shape.hv >= 0.48 && sm.exg < 0.08) {
+      return {
+        klass: "cargo_yard",
+        confidence: 2,
+        why: `${shape.blobs} compact bright objects + HV ${shape.hv.toFixed(2)} — yard/apron morphology in a city ring.`,
+      };
+    }
+    if (shape.hv >= 0.6 && shape.edge >= 0.11 && delta >= 0.1) {
+      return {
+        klass: "earthwork",
+        confidence: 2,
+        why: `Rectilinear edges with dated change. Berm/compound cue, not a fighting-position ID.`,
+      };
+    }
+    return null;
+  }
+  if (shape.blobs >= 8 && sm.exg < 0.07) {
+    return {
+      klass: "camp_buildup",
+      confidence: 2,
+      why: `${shape.blobs} compact objects on desert — camp/makeshift-base morphology (AfriMEOSINT SE Libya pattern). Human verify.`,
+    };
+  }
+  if (delta >= 0.13 && sm.exg < 0.08) {
+    return {
+      klass: delta >= 0.16 && sm.red > 0.02 ? "burn_scar" : "cargo_yard",
+      confidence: 2,
+      why: `Desert chip Δ ${delta.toFixed(3)}. New bright/scrape relative to compare date — phenology still possible.`,
+    };
+  }
+  if (shape.blobs >= 4 && sm.exg < 0.08 && shape.edge >= 0.06) {
+    return {
+      klass: "vehicle_park",
+      confidence: 2,
+      why: `${shape.blobs} compact bright objects on low-vegetation ground — vehicle-park / staging morphology. Type unresolvable at this grain.`,
+    };
+  }
+  if (shape.hv >= 0.55 && shape.edge >= 0.09 && sm.exg < 0.07) {
+    return {
+      klass: "earthwork",
+      confidence: 2,
+      why: `Linear HV ${shape.hv.toFixed(2)} · edge ${shape.edge.toFixed(2)} — possible bermed pad/compound.`,
+    };
+  }
+  if (shape.blobs >= 4 && shape.edge >= 0.08 && sm.exg < 0.07) {
+    return {
+      klass: "base_compound",
+      confidence: 1,
+      why: `${shape.blobs} compact objects · edge ${shape.edge.toFixed(2)} — unlisted pad/yard cue.`,
+    };
+  }
+  return null;
+}
+
+async function scoreScanCell(
+  cell: { lat: number; lon: number; sector: SweepSector },
+  date: string,
+  compareDate: string,
+): Promise<DetectHit | null> {
+  const bbox = boxOf(cell.lat, cell.lon, Math.min(cell.sector.step * 0.45, 0.05));
+  const morph = await loadMorphChip(cell.lat, cell.lon, bbox);
+  if (!morph.im) return null;
+  const sm = stats(morph.im);
+  const shape = morphScore(morph.im);
+  const interesting =
+    cell.sector.mode === "desert"
+      ? shape.blobs >= 3 || shape.hv >= 0.5 || shape.edge >= 0.1
+      : shape.blobs >= 6 || shape.hv >= 0.55 || shape.edge >= 0.12;
+  if (!interesting || sm.exg > 0.12) return null;
+  let delta = 0;
+  let cloud: CloudClass = "clear";
+  let datedLayer = "none";
+  if (cell.sector.mode === "desert") {
+    const after = await loadDatedChip(date, bbox);
+    const before = await loadDatedChip(compareDate, bbox);
+    const sa = stats(after.im);
+    const sb = stats(before.im);
+    cloud = after.im ? cloudClass(sa) : "clear";
+    delta = mad(sb, sa);
+    datedLayer = after.layer;
+  }
+  const labelLat = cell.lat;
+  const labelLon = cell.lon;
+  const found = (() => {
+    const raw = classifyScan(shape, sm, delta, cloud, cell.sector.mode);
+    if (!raw) return null;
+    if (ethChadLabel(labelLat, labelLon) && (raw.klass === "base_compound" || raw.klass === "vehicle_park")) {
+      return { ...raw, klass: "irregular_pad" as DetectKlass };
+    }
+    return raw;
+  })();
+  if (!found) return null;
+  const hunts = huntsFromKlass(found.klass);
+  if (ethChadLabel(cell.lat, cell.lon) && !hunts.includes("irreg")) hunts.push("irreg");
+  const meta = DETECT_KLASS[found.klass];
+  return {
+    id: `det-scan-${cell.sector.id}-${cellKey(cell.lat, cell.lon).replace(":", "-")}`,
+    klass: found.klass,
+    title: `Tile find · ${meta.short} · ${cell.sector.name}`,
+    body: `Blank-tile sweep of ${cell.sector.name} (not a Twitter pin). ${found.why} Observation only — not a base, weapons, or occupancy ID.`,
+    lat: cell.lat,
+    lon: cell.lon,
+    ...bbox,
+    confidence: found.confidence,
+    families: found.klass === "possible_damage" ? ["morphology", "damage"] : ["morphology"],
+    techniques: ["chip", "obb", "cd", "spectral", "xai"],
+    explain: `${found.why} Chip ${morph.layer}${datedLayer !== "none" ? ` · dated ${datedLayer}` : ""}.`,
+    hunts,
+    cloud,
+    change: datedLayer === "none" || cloud === "cloudy" || cloud === "unknown" ? undefined : Math.round(delta * 1000) / 1000,
+    date,
+    compareDate,
+    features: featuresFromShape(shape, sm, delta),
+  };
+}
+
+async function sweepTiles(args: {
+  known: { lat: number; lon: number }[];
+  date: string;
+  compareDate: string;
+}): Promise<{ tried: number; hits: DetectHit[] }> {
+  const cells = sweepCells(args.known).slice(0, 20);
+  const scored = await pool(cells, 6, (c) => scoreScanCell(c, args.date, args.compareDate));
+  const hits = scored.filter((h): h is DetectHit => h != null);
+  return { tried: cells.length, hits };
+}
+
 export async function runDetect(args: {
   boxes: WatchBox[];
   firms: ThermalEvent[];
@@ -992,18 +1275,25 @@ export async function runDetect(args: {
   gdelt?: GdeltEvent[];
 }): Promise<DetectReport> {
   const fused = fuseDetect(args);
-  if (!args.optical || fused.length === 0) {
+  const empty = {
+    ranAt: new Date().toISOString(),
+    opticalTried: 0,
+    opticalOk: 0,
+    gridTried: 0,
+    gridHits: 0,
+  };
+  if (!args.optical) {
     return {
       hits: fused,
-      ranAt: new Date().toISOString(),
-      opticalTried: 0,
-      opticalOk: 0,
-      note: fused.length
-        ? "Fusion-only this pass (FIRMS × ADS-B × AIS × OSM × news × catalog). Optical chips run when DET stays on."
-        : "No candidates this cycle. Empty is a coverage gap, not a negative.",
+      ...empty,
+      note: "Fusion-only this pass. Tile sweep runs when DET stays on.",
     };
   }
   const rank = (h: DetectHit) =>
+    (h.id.startsWith("det-scan-") ? 20 : 0) +
+    (h.id.startsWith("det-rep-") ? 8 : 0) +
+    (h.hunts.includes("wire") ? 4 : 0) +
+    (h.hunts.includes("rsf") || h.hunts.includes("chain") ? 6 : 0) +
     (h.families.length * 3) +
     (h.hunts.length * 2) +
     (h.klass === "possible_damage" ? 6 : 0) +
@@ -1012,20 +1302,27 @@ export async function runDetect(args: {
     (h.klass === "earthwork" || h.klass === "pol_storage" ? 4 : 0) +
     (h.klass === "airfield_activity" ? 2 : 0) +
     (h.confidence);
-  const top = [...fused].sort((a, b) => rank(b) - rank(a)).slice(0, 40);
-  let opticalOk = 0;
-  const scored = await pool(top, 4, async (h) => {
-    const next = await scoreChip(h, args.date, args.compareDate);
-    if (next.cloud !== "unknown") opticalOk += 1;
-    return next;
-  });
-  const byId = new Map(scored.map((h) => [h.id, h]));
-  const hits = fused.map((h) => byId.get(h.id) ?? h);
+  const known = [
+    ...SITES.map((s) => ({ lat: s.lat, lon: s.lon })),
+    ...SEED_REPORTS.map((r) => ({ lat: r.lat, lon: r.lon })),
+    ...fused.map((h) => ({ lat: h.lat, lon: h.lon })),
+  ];
+  const pinTop = [...fused].sort((a, b) => rank(b) - rank(a)).slice(0, 18);
+  const [scoredPins, grid] = await Promise.all([
+    pool(pinTop, 4, (h) => scoreChip(h, args.date, args.compareDate)),
+    sweepTiles({ known, date: args.date, compareDate: args.compareDate }),
+  ]);
+  const pinOk = scoredPins.filter((h) => h.cloud !== "unknown").length;
+  const byId = new Map(scoredPins.map((h) => [h.id, h]));
+  const pinHits = fused.map((h) => byId.get(h.id) ?? h);
+  const hits = [...grid.hits, ...pinHits];
   return {
     hits,
     ranAt: new Date().toISOString(),
-    opticalTried: top.length,
-    opticalOk,
-    note: `GEOINT desk: BDA, cargo, air, sea, vehicles, pads, earthworks, POL, camps, crossings, tracks, foreign-linked nodes. ${opticalOk}/${top.length} chips readable. Candidates for review — not identifications.`,
+    opticalTried: pinTop.length + grid.tried,
+    opticalOk: pinOk + grid.hits.filter((h) => h.cloud !== "unknown").length,
+    gridTried: grid.tried,
+    gridHits: grid.hits.length,
+    note: `Imagery sweep (not Twitter): ${grid.tried} blank tiles this cycle, ${grid.hits.length} unknown morphology flags. ${pinOk}/${pinTop.length} known pins also chipped. 10–30 m public tiles — pads/yards/change cues, not IDs.`,
   };
 }
