@@ -1,6 +1,6 @@
-import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
+import { y as require_jsx_runtime } from "../_libs/@tanstack/react-router+[...].mjs";
 import { t as DocPage } from "./doc-page-CHcT7Jif.mjs";
-//#region D:/Codex-work/ahsr-20260920/node_modules/.nitro/vite/services/ssr/assets/ethics-J4ST5L-I.js
+//#region node_modules/.nitro/vite/services/ssr/assets/ethics-J4ST5L-I.js
 var import_jsx_runtime = require_jsx_runtime();
 var MISSION = {
 	name: "Abu Hureirah Situation Room: Sudan Wing",

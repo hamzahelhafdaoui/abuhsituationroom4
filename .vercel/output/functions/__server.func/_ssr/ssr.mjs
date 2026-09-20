@@ -1,12 +1,11 @@
-import { r as __exportAll } from "../_runtime.mjs";
+import { n as __exportAll } from "../_runtime.mjs";
 import { n as require_react } from "../_libs/@radix-ui/react-compose-refs+[...].mjs";
-import { C as getScriptPreloadAttrs, D as _getRenderedMatches, E as resolveManifestCssLink, I as rootRouteId, L as isNotFound, M as isRedirect, N as isResolvedRedirect, O as executeRewriteInput, P as parseRedirect, T as resolveManifestAssetLink, a as isSsrResponse, c as stripSsrResponseBody, d as RouterProvider, i as disposeSsrResponseDetached, k as invariant, n as bindSsrResponseToRequest, o as normalizeSsrResponse, r as defineHandlerCallback, s as replaceSsrResponse, t as renderRouterToStream, w as getStylesheetHref } from "../_libs/@tanstack/react-router+[...].mjs";
+import { A as invariant, D as resolveManifestCssLink, E as resolveManifestAssetLink, F as parseRedirect, L as rootRouteId, N as isRedirect, O as _getRenderedMatches, P as isResolvedRedirect, R as isNotFound, T as getStylesheetHref, a as isSsrResponse, c as stripSsrResponseBody, d as RouterProvider, i as disposeSsrResponseDetached, k as executeRewriteInput, n as bindSsrResponseToRequest, o as normalizeSsrResponse, r as defineHandlerCallback, s as replaceSsrResponse, t as renderRouterToStream, w as getScriptPreloadAttrs, y as require_jsx_runtime } from "../_libs/@tanstack/react-router+[...].mjs";
 import { n as createMemoryHistory } from "../_libs/tanstack__history.mjs";
 import { a as getOrigin, c as createSerializationAdapter, d as toCrossJSONAsync, f as toCrossJSONStream, i as getNormalizedURL, l as makeSerovalPlugin, n as mergeHeaders, o as defaultSerovalPlugins, r as attachRouterServerSsrUtils, s as createRawStreamRPCPlugin, t as waitForRequest, u as fromJSON } from "../_libs/@tanstack/router-core+[...].mjs";
-import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
 import { n as toResponse, t as H3Event } from "../_libs/h3-v2+rou3.mjs";
 import { AsyncLocalStorage } from "node:async_hooks";
-//#region D:/Codex-work/ahsr-20260920/node_modules/.nitro/vite/services/ssr/index.js
+//#region node_modules/.nitro/vite/services/ssr/index.js
 var ssr_exports = /* @__PURE__ */ __exportAll({
 	createServerEntry: () => createServerEntry,
 	default: () => server_default,
@@ -89,7 +88,7 @@ var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 * the dev styles URL for route-scoped CSS collection.
 */
 async function getStartManifest(matchedRoutes) {
-	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-CHHUxd9N.mjs");
+	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-pA4eCYPD.mjs");
 	const startManifest = tsrStartManifest();
 	let routes = startManifest.routes;
 	routes[rootRouteId];
@@ -111,27 +110,19 @@ async function getStartManifest(matchedRoutes) {
 var manifest = {
 	"01ac50a6b210d7c55e9b45dea72e796cba145e186591bdd88c0094df5a076b33": {
 		functionName: "getLiveBundle_createServerFn_handler",
-		importer: () => import("./live-Berfkhnt.mjs")
+		importer: () => import("./live-DL4DXbFJ.mjs")
 	},
 	"1f5d33602816122be63cf7759c11db5747202a5498921cc12b289e8c314b42dd": {
 		functionName: "generateAiBrief_createServerFn_handler",
-		importer: () => import("./ai-brief-DvNb5-3E.mjs")
+		importer: () => import("./ai-brief-Dm4blm6u.mjs")
 	},
 	"534092db8484cb1d618e39dace1c97f0e51038567adcb1ce65879546b6fe22bd": {
 		functionName: "getTraffic_createServerFn_handler",
-		importer: () => import("./live-Berfkhnt.mjs")
+		importer: () => import("./live-DL4DXbFJ.mjs")
 	},
 	"641b362bce8b1453776fc05806c0f955d716bb25c197fa42b79b4b00962af98e": {
 		functionName: "getNewsFeed_createServerFn_handler",
-		importer: () => import("./news-Cy3ixc6C.mjs")
-	},
-	"b92cb569c89837647f88274b87e4fe2b3a23661ae77698d10549593f36023b86": {
-		functionName: "runSatelliteAnalysis_createServerFn_handler",
-		importer: () => import("./satellite-service-CYZN7RU-.mjs")
-	},
-	"eaccd0a304cf99205c3b88484fca90d76808d46605197be7e01296aa47138b8d": {
-		functionName: "getHazards_createServerFn_handler",
-		importer: () => import("./hazard-service-DOpG7qkw.mjs")
+		importer: () => import("./news-nVNfrl1w.mjs")
 	}
 };
 async function getServerFnById(id, access) {
@@ -1401,9 +1392,9 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
 	const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-		import("./router-ddK71iar.mjs").then((n) => n.t),
-		import("./start-CRBpiJQv.mjs"),
-		import("./empty-plugin-adapters-CTBMa7H3.mjs")
+		import("./router-BqmzvNr9.mjs").then((n) => n.t),
+		import("./start-5Z2QO8AU.mjs"),
+		import("./empty-plugin-adapters-D9UWiqvJ.mjs")
 	]);
 	return {
 		routerEntry,

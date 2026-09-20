@@ -1,7 +1,6 @@
-import { _ as Link } from "../_libs/@tanstack/react-router+[...].mjs";
-import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
-import { k as ArrowLeft, s as Satellite } from "../_libs/lucide-react.mjs";
-//#region D:/Codex-work/ahsr-20260920/node_modules/.nitro/vite/services/ssr/assets/doc-page-CHcT7Jif.js
+import { _ as Link, y as require_jsx_runtime } from "../_libs/@tanstack/react-router+[...].mjs";
+import { A as ArrowLeft, s as Satellite } from "../_libs/lucide-react.mjs";
+//#region node_modules/.nitro/vite/services/ssr/assets/doc-page-CHcT7Jif.js
 var import_jsx_runtime = require_jsx_runtime();
 function DocPage({ kicker, title, children }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
