@@ -45,8 +45,8 @@ export function mapCommand(cmd: "in" | "out") {
   window.dispatchEvent(new CustomEvent("sahel-map", { detail: cmd }));
 }
 
-export function mapFit(bbox: { west: number; south: number; east: number; north: number }) {
-  window.dispatchEvent(new CustomEvent("sahel-map-fit", { detail: bbox }));
+export function mapFit(bbox: { west: number; south: number; east: number; north: number }, options: { maxZoom?: number; pitch?: number } = {}) {
+  window.dispatchEvent(new CustomEvent("sahel-map-fit", { detail: { ...bbox, ...options } }));
 }
 
 export function mapMeasure() {

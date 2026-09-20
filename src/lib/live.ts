@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { createRequestCache } from "@/lib/request-cache";
 import { AIRFIELDS, FLIGHTS, SITES, THERMAL } from "@/data/catalog";
 import { inAoi, nearest } from "@/lib/geo";
 import { pullNews } from "@/lib/news";
@@ -19,20 +20,13 @@ import { AOI } from "@/lib/types";
 const UA =
   "AbuHureirahSitroom/1.0 (civilian public-data archive; documentation only)";
 
-type CacheEntry<T> = { at: number; value: T };
-const mem = new Map<string, CacheEntry<unknown>>();
+const cached = createRequestCache();
 const TTL_MS = 90_000;
-
-function cached<T>(key: string, ttl: number, fn: () => Promise<T>): Promise<T> {
-  const hit = mem.get(key) as CacheEntry<T> | undefined;
-  if (hit && Date.now() - hit.at < ttl) return Promise.resolve(hit.value);
-  return fn().then((value) => {
-    mem.set(key, { at: Date.now(), value });
-    return value;
-  });
-}
+const retryAfter = new Map<string, number>();
 
 async function fetchText(url: string, ms = 12000): Promise<string> {
+  const origin = new URL(url).origin;
+  if ((retryAfter.get(origin) ?? 0) > Date.now()) throw new Error("Provider rate-limit cooldown");
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), ms);
   try {
@@ -40,6 +34,11 @@ async function fetchText(url: string, ms = 12000): Promise<string> {
       headers: { Accept: "text/plain, application/json, */*", "User-Agent": UA },
       signal: ctrl.signal,
     });
+    if (res.status === 429) {
+      const header = res.headers.get("retry-after") ?? "";
+      const seconds = /^\d+$/.test(header) ? Number(header) : (Date.parse(header) - Date.now()) / 1000;
+      retryAfter.set(origin, Date.now() + Math.min(3600, Math.max(60, Number.isFinite(seconds) ? seconds : 60)) * 1000);
+    }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.text();
   } finally {
@@ -303,7 +302,12 @@ async function pullOpenSky(): Promise<RawAc[]> {
   }
 }
 
-async function pullFlights(): Promise<{ rows: FlightEvent[]; meta: LiveMeta }> {
+function pullFlights(): Promise<{ rows: FlightEvent[]; meta: LiveMeta }> {
+  // Shared by both the bundle sweep and the traffic endpoint.
+  return cached("flight-observations", 60_000, pullFlightsUncached);
+}
+
+async function pullFlightsUncached(): Promise<{ rows: FlightEvent[]; meta: LiveMeta }> {
   const points: [number, number, number][] = [
     [15.6, 32.5, 380],
     [13.6, 25.3, 380],
@@ -325,8 +329,11 @@ async function pullFlights(): Promise<{ rows: FlightEvent[]; meta: LiveMeta }> {
   ];
   const raw: RawAc[] = [];
   let source = "adsb.lol / adsb.fi";
-  const results = await Promise.all(points.map(([la, lo, d]) => pullAdsbPoint(la, lo, d)));
-  for (const batch of results) raw.push(...batch);
+  // Bound fan-out to three calls; don't launch every region simultaneously.
+  for (let i = 0; i < points.length; i += 3) {
+    const results = await Promise.all(points.slice(i, i + 3).map(([la, lo, d]) => pullAdsbPoint(la, lo, d)));
+    for (const batch of results) raw.push(...batch);
+  }
   if (raw.length === 0) {
     const sky = await pullOpenSky();
     raw.push(...sky);

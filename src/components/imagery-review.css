@@ -1,0 +1,433 @@
+.ir-launch {
+  position: absolute;
+  right: 122px;
+  bottom: 20px;
+  z-index: 40;
+  pointer-events: auto;
+  background: #dcad63;
+  color: #111b19;
+  border: 1px solid #e9c997;
+  padding: 12px 16px;
+  border-radius: 5px;
+  font: 600 12px monospace;
+  letter-spacing: 0.08em;
+}
+.ir-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #020a0ccc;
+  z-index: 100;
+}
+.ir-workbench {
+  position: fixed;
+  inset: 20px;
+  z-index: 101;
+  overflow: auto;
+  background: #101c20;
+  color: #e4eeed;
+  border: 1px solid #40585e;
+  border-radius: 12px;
+  padding: 24px;
+  font: 14px/1.5 system-ui;
+  box-shadow: 0 20px 80px #0009;
+}
+.ir-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+.ir-header h2 {
+  font-size: 30px;
+  font-weight: 600;
+  margin: 8px 0;
+}
+.ir-header p,
+.ir-hint {
+  color: #a4b9bc;
+}
+.ir-kicker {
+  font: 11px monospace;
+  letter-spacing: 0.16em;
+  color: #dcad63;
+}
+.ir-workbench button,
+.ir-button {
+  display: inline-block;
+  border: 1px solid #496068;
+  border-radius: 5px;
+  padding: 8px 12px;
+  background: #1a2a30;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ir-workbench button:hover,
+.ir-button:hover {
+  background: #294049;
+}
+.ir-workbench button[aria-pressed="true"] {
+  border-color: #dcad63;
+  color: #efc78e;
+}
+.ir-workbench button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ir-workbench input:not([type="checkbox"]):not([type="range"]):not([type="file"]),
+.ir-workbench select,
+.ir-workbench textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #496068;
+  border-radius: 4px;
+  background: #0a1519;
+  padding: 8px;
+  color: #e4eeed;
+}
+.ir-workbench input[type="checkbox"] {
+  accent-color: #dcad63;
+}
+.ir-workbench input[type="range"] {
+  accent-color: #dcad63;
+  width: 120px;
+  vertical-align: middle;
+}
+.ir-workbench textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+.ir-toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.ir-toolbar > input {
+  flex: 1;
+  min-width: 200px !important;
+}
+.ir-toolbar > select {
+  width: 200px;
+}
+.ir-status {
+  padding: 10px 0;
+  color: #dcad63;
+  min-height: 42px;
+}
+.ir-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+}
+.ir-body aside {
+  border-left: 1px solid #31474d;
+  padding-left: 24px;
+}
+.ir-workbench h3 {
+  font: 600 12px monospace;
+  letter-spacing: 0.08em;
+  margin: 0 0 12px;
+  color: #bbd0d1;
+}
+.ir-loaders,
+.ir-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.ir-loaders section {
+  border: 1px solid #31474d;
+  padding: 14px;
+  border-radius: 7px;
+}
+.ir-loaders p {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  margin: 8px 0;
+}
+.ir-loaders label:not(.ir-button),
+.ir-editor label,
+.ir-body aside > label {
+  display: block;
+  margin: 10px 0;
+  color: #a4b9bc;
+  font-size: 12px;
+}
+.ir-hint {
+  font-size: 12px;
+  margin: 12px 0;
+}
+.ir-check {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 16px 0;
+}
+.ir-notice {
+  border-left: 2px solid #dcad63;
+  background: #dcad6310;
+  padding: 12px;
+  font-size: 12px;
+  margin: 12px 0;
+}
+.ir-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.ir-controls label {
+  font-size: 12px;
+}
+.ir-pair.single {
+  grid-template-columns: 1fr;
+}
+.ir-stage {
+  position: relative;
+  background: #050b0e;
+  overflow: hidden;
+}
+.ir-stage img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  user-select: none;
+  pointer-events: none;
+}
+.ir-draw {
+  cursor: crosshair;
+  touch-action: none;
+}
+.ir-annotations {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.ir-annotations rect {
+  stroke: #ffc46c;
+  fill: #ffc46c12;
+  stroke-width: 0.3;
+}
+.ir-annotations rect.selected {
+  stroke: #fff;
+  stroke-width: 0.5;
+}
+.ir-annotations text {
+  fill: #ffc46c;
+  font: bold 3px system-ui;
+  paint-order: stroke;
+  stroke: #000;
+  stroke-width: 0.1;
+}
+.ir-empty {
+  min-height: 260px;
+  background: #0b161a;
+  display: grid;
+  place-items: center;
+  border: 1px dashed #40585e;
+  color: #799297;
+}
+.ir-swipe {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+.ir-swipe input {
+  flex: 1;
+}
+.ir-mark-list {
+  display: grid;
+  gap: 6px;
+  max-height: 220px;
+  overflow: auto;
+}
+.ir-mark-list button {
+  text-align: left;
+  white-space: normal;
+}
+.ir-mark-list small {
+  display: block;
+  color: #a4b9bc;
+}
+.ir-exports {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0;
+}
+.ir-workbench footer {
+  border-top: 1px solid #31474d;
+  margin-top: 24px;
+  padding-top: 16px;
+  color: #8da6aa;
+  font-size: 12px;
+}
+.ir-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+.ir-button:focus-within {
+  outline: 2px solid #dcad63;
+}
+.ir-workbench :focus-visible {
+  outline: 2px solid #dcad63;
+  outline-offset: 3px;
+}
+@media (min-width: 768px) {
+  .ir-launch {
+    bottom: 112px;
+  }
+}
+@media (max-width: 850px) {
+  .ir-body {
+    grid-template-columns: 1fr;
+  }
+  .ir-body aside {
+    border-left: 0;
+    border-top: 1px solid #31474d;
+    padding: 20px 0;
+  }
+  .ir-workbench {
+    inset: 6px;
+    padding: 16px;
+  }
+  .ir-header h2 {
+    font-size: 24px;
+  }
+  .ir-loaders,
+  .ir-pair {
+    grid-template-columns: 1fr;
+  }
+  .ir-launch {
+    right: 113px;
+    font-size: 10px;
+    padding: 13px 10px;
+  }
+  .ir-toolbar > select {
+    width: 100%;
+  }
+}
+
+.ir-image-scroll {
+  overflow: auto;
+  max-height: 70vh;
+}
+.ir-image-scroll > .ir-pair {
+  min-width: 100%;
+}
+.ir-auto {
+  border: 1px solid #806b44;
+  background: linear-gradient(120deg, #26332e, #142329);
+  border-radius: 8px;
+  padding: 18px;
+  margin: 20px 0;
+}
+.ir-auto h3 {
+  font: 600 22px system-ui;
+  color: #f0e7d8;
+  margin: 8px 0;
+}
+.ir-auto p {
+  font-size: 13px;
+  color: #b6c6c4;
+}
+.ir-auto-fields {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.ir-auto-fields label {
+  font-size: 12px;
+  color: #a9bcb9;
+}
+.ir-workbench .ir-run {
+  background: #dcad63;
+  border-color: #dcad63;
+  color: #17201d;
+  font-weight: 700;
+}
+.ir-auto-result {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #49605a;
+}
+.ir-auto-result a {
+  display: block;
+  color: #dfbe86;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+.ir-manual {
+  margin: 8px 0;
+}
+.ir-manual summary {
+  color: #a4b9bc;
+  cursor: pointer;
+  padding: 10px 0;
+}
+.ir-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 14px 0;
+}
+.ir-chips figcaption {
+  font: 10px monospace;
+  color: #d9bc8a;
+  margin-bottom: 6px;
+}
+.ir-chips figure {
+  min-width: 0;
+}
+.ir-chips img {
+  image-rendering: pixelated;
+}
+@media (max-width: 850px) {
+  .ir-auto-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+  .ir-auto h3 {
+    font-size: 20px;
+  }
+}
+.ir-map-result {
+  position: absolute;
+  bottom: 164px;
+  right: 12px;
+  z-index: 40;
+  background: #122323ee;
+  color: #dce9e4;
+  border: 1px solid #9b8154;
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: grid;
+  gap: 5px;
+  font: 11px monospace;
+  max-width: 300px;
+  pointer-events: auto;
+}
+.ir-map-result b {
+  color: #e4bd80;
+}
+.ir-map-result button {
+  text-align: left;
+  text-decoration: underline;
+  color: #d6b880;
+}
+@media (max-width: 767px) {
+  .ir-map-result {
+    bottom: 75px;
+    right: 12px;
+    max-width: 270px;
+  }
+}
