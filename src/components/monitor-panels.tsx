@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ExternalLink, Loader2, Plus, Sparkles } from "lucide-react";
 import { CATEGORY_META, CONTROL_AS_OF, CONTROL_SOURCE, FACTION_META, imageryLinks, type Faction, type OsintReport, type ReportCategory } from "@/lib/osint";
 import { ACTORS, ANALYTICAL_CHAIN, CLAIM_CLASS } from "@/lib/doctrine";
@@ -10,6 +10,11 @@ import { DETECT_KLASS, type DetectHit, type DetectReport } from "@/lib/imagery-d
 import { HUNTS, type HuntId } from "@/lib/hunt";
 import type { FuaeRecord } from "@/lib/fuae";
 import { RSF_WATCH, WHY_LABEL, type RsfWatchSite } from "@/data/rsf-watch";
+import { VISTA_LEGEND } from "@/lib/vista-map";
+import type { Coincidence } from "@/lib/fusion";
+import { parseWeights, serializeWeights } from "@/lib/chip-model";
+import { downloadBlob } from "@/lib/utils";
+import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -780,6 +785,26 @@ export function ControlLegend({ open, onToggle }: { open: boolean; onToggle: () 
           <p className="mt-2 border-t border-border pt-2 text-[10px] leading-tight text-subtle">
             As of {CONTROL_AS_OF}. {CONTROL_SOURCE}
           </p>
+          <p className="mt-2 text-[10px] font-medium uppercase tracking-wider text-subtle">Vista copy (English)</p>
+          <ul className="mt-1 space-y-1">
+            {VISTA_LEGEND.map((m) => (
+              <li key={m.faction} className="flex items-center gap-2 text-[11px] text-muted">
+                <span className="h-2.5 w-4 shrink-0 rounded-sm border" style={{ backgroundColor: `${m.color}55`, borderColor: m.color }} />
+                {m.label}
+              </li>
+            ))}
+            <li className="flex items-center gap-2 text-[11px] text-muted">
+              <span className="size-2.5 rounded-full" style={{ backgroundColor: "#3d8b3d" }} />
+              SAF-held division HQ (green pin)
+            </li>
+            <li className="flex items-center gap-2 text-[11px] text-muted">
+              <span className="size-2.5 rounded-full" style={{ backgroundColor: "#c9a227" }} />
+              RSF-held division HQ (amber pin)
+            </li>
+          </ul>
+          <p className="mt-1 text-[10px] leading-tight text-subtle">
+            Translated from the public Google My Map “Sudan control map (copied from Vista)”. Third-party compiled control — not a live frontline.
+          </p>
           <ul className="mt-2 space-y-1 border-t border-border pt-2">
             <li className="flex items-center gap-2 text-[11px] text-muted">
               <span className="size-2.5 rounded-full bg-accent" />
@@ -808,12 +833,18 @@ export function DetectPanel({
   report,
   loading,
   onOpen,
+  coincidence,
 }: {
   report: DetectReport | null;
   loading: boolean;
   onOpen: (hit: DetectHit) => void;
+  coincidence?: Coincidence | null;
 }) {
   const [filter, setFilter] = useState<HuntId | "all">("all");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const modelWeights = useAppStore((s) => s.modelWeights);
+  const setModelWeights = useAppStore((s) => s.setModelWeights);
+  const chipSamples = useAppStore((s) => s.chipSamples);
   const hits = report?.hits ?? [];
   const counts = Object.fromEntries(
     HUNTS.map((h) => [h.id, hits.filter((x) => x.hunts?.includes(h.id)).length]),
@@ -840,7 +871,22 @@ export function DetectPanel({
       <p className="border-t border-border px-2.5 py-1.5 text-[10px] leading-snug text-subtle">
         {report?.note ??
           "GEOINT desk — BDA, cargo, air, sea, vehicles, pads, berms, POL, camps, crossings. Candidates, not IDs."}
+        {" "}Click a row to slew to high-res at yard scale.
       </p>
+      {coincidence ? (
+        <div className="border-t border-border px-2.5 py-1.5">
+          <div className="flex items-center justify-between font-mono text-[10px] tracking-wide">
+            <span className="text-muted">COINCIDENCE</span>
+            <span className="text-accent">{coincidence.score} · {coincidence.level}</span>
+          </div>
+          <div className="mt-1 h-1 overflow-hidden rounded-full bg-raised">
+            <div className="h-full bg-accent" style={{ width: `${coincidence.score}%` }} />
+          </div>
+          <p className="mt-1 text-[10px] leading-tight text-subtle">
+            War-Probability-OSINT fusion idea, public signals only — not a forecast.
+          </p>
+        </div>
+      ) : null}
       <div className="flex flex-wrap gap-0.5 px-2 pb-2">
         <button
           type="button"
@@ -900,6 +946,53 @@ export function DetectPanel({
           })
         )}
       </ul>
+      <div className="flex flex-wrap gap-1 border-t border-border px-2 py-1.5">
+        <button
+          type="button"
+          className="rounded-sm px-1.5 py-0.5 font-mono text-[9px] text-muted hover:text-fg"
+          onClick={() => downloadBlob("ahsr-chip-weights.json", "application/json", serializeWeights(modelWeights))}
+        >
+          Export weights
+        </button>
+        <button
+          type="button"
+          className="rounded-sm px-1.5 py-0.5 font-mono text-[9px] text-muted hover:text-fg"
+          onClick={() =>
+            downloadBlob(
+              "ahsr-chip-samples.json",
+              "application/json",
+              JSON.stringify({ version: 1, kind: "ahsr-chip-samples", samples: chipSamples }, null, 2),
+            )
+          }
+        >
+          Export labels {chipSamples.length ? `(${chipSamples.length})` : ""}
+        </button>
+        <button
+          type="button"
+          className="rounded-sm px-1.5 py-0.5 font-mono text-[9px] text-muted hover:text-fg"
+          onClick={() => fileRef.current?.click()}
+        >
+          Import Colab JSON
+        </button>
+        <a href="/sudan-chip-train.ipynb" download className="rounded-sm px-1.5 py-0.5 font-mono text-[9px] text-muted hover:text-fg">
+          Colab notebook
+        </a>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="application/json"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            void file.text().then((t) => {
+              const w = parseWeights(t);
+              if (w) setModelWeights(w);
+            });
+            e.target.value = "";
+          }}
+        />
+      </div>
     </div>
   );
 }

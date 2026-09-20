@@ -38,6 +38,7 @@ type FlyMap = {
   getZoom: () => number;
   getBearing: () => number;
   flyTo: (o: Record<string, unknown>) => void;
+  fitBounds?: (b: [[number, number], [number, number]], o: Record<string, unknown>) => void;
   once: (ev: string, fn: () => void) => void;
   off: (ev: string, fn: () => void) => void;
 };
@@ -69,4 +70,42 @@ export function cinematicFly(
     easing: spyEase,
     essential: true,
   });
+}
+
+export function cinematicFit(
+  map: FlyMap,
+  opts: { west: number; south: number; east: number; north: number; zoom: number; label?: string },
+) {
+  if (!map.fitBounds) {
+    cinematicFly(map, {
+      lon: (opts.west + opts.east) / 2,
+      lat: (opts.south + opts.north) / 2,
+      zoom: opts.zoom,
+      label: opts.label,
+    });
+    return;
+  }
+  const duration = flyMs(map.getZoom(), opts.zoom, 0.45);
+  emitSlew({ phase: "slewing", label: opts.label, duration });
+  const onEnd = () => {
+    map.off("moveend", onEnd);
+    emitSlew({ phase: "lock", label: opts.label });
+    window.setTimeout(() => emitSlew({ phase: "idle" }), 1400);
+  };
+  map.once("moveend", onEnd);
+  map.fitBounds(
+    [
+      [opts.west, opts.south],
+      [opts.east, opts.north],
+    ],
+    {
+      padding: 90,
+      maxZoom: opts.zoom,
+      duration,
+      pitch: pitchForZoom(opts.zoom),
+      bearing: map.getBearing() + 10,
+      essential: true,
+      easing: spyEase,
+    },
+  );
 }

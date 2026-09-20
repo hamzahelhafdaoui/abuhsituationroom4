@@ -1,0 +1,1702 @@
+{
+  "type": "FeatureCollection",
+  "name": "Sudan control map (copied from Vista)",
+  "description": "Public Google My Map titled in Arabic “Sudan control map (copied from Vista)”. Source note: “Not my map — it is Ra'ad's map; I update it until he returns.” Third-party compiled control. Not a live frontline. Not occupancy. Not targeting.",
+  "attribution": "Copied Vista / Ra'ad Google My Map (public). English labels by this workbench. Original Arabic retained in nameAr.",
+  "url": "https://www.google.com/maps/d/viewer?mid=1UXXzhOzKQrp4agyVlCSP6MMhCCj9zvY",
+  "asOf": "unknown — source does not date the layer",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-01",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "1st Infantry Division HQ",
+        "nameAr": "قيادة الفرقة الأولى مشاة",
+        "place": "Wad Madani area",
+        "party": "saf",
+        "note": "Green pin on source map — treated as SAF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.53217,
+          14.39881
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-02",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "2nd Infantry Division HQ",
+        "nameAr": "قيادة الفرقة الثانية مشاة",
+        "place": "Gedaref area",
+        "party": "saf",
+        "note": "Green pin on source map — treated as SAF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          35.343,
+          13.95972
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-03",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "3rd Infantry Division HQ — Shendi",
+        "nameAr": "قيادة الفرقة الثالثة مشاة-شندي",
+        "place": "Shendi",
+        "party": "saf",
+        "note": "Green pin on source map — treated as SAF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.4427,
+          16.70679
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-04",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "4th Infantry Division",
+        "nameAr": "الفرقة الرابعة مشاة",
+        "place": "Blue Nile / Damazine area",
+        "party": "saf",
+        "note": "Green pin on source map — treated as SAF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.3609,
+          11.80483
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-05",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "5th Infantry Division HQ (Camel Corps) — El Obeid",
+        "nameAr": "قيادة الفرقة الخامسة مشاة (الهجانة)-الابيض",
+        "place": "El Obeid",
+        "party": "saf",
+        "note": "Green pin on source map — treated as SAF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.22379,
+          13.17797
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-06",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "7th Infantry Division HQ",
+        "nameAr": "قيادة الفرقة السابعة مشاة",
+        "place": "Khartoum area",
+        "party": "saf",
+        "note": "Green pin on source map — treated as SAF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.54628,
+          15.60861
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-07",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "9th Airborne Division HQ — approximate",
+        "nameAr": "قيادة الفرقة التاسعة المحمولة جواً-موقع تقريبي.",
+        "place": "Omdurman / Khartoum North area",
+        "party": "saf",
+        "note": "Green pin on source map — treated as SAF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.48845,
+          15.83089
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-08",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "10th Infantry Division HQ — Abu Jubeiha",
+        "nameAr": "قيادة الفرقة العاشرة مشاة-ابو جبيهة",
+        "place": "Abu Jubeiha",
+        "party": "saf",
+        "note": "Green pin on source map — treated as SAF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          31.24752,
+          11.44453
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-09",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "11th Infantry Division HQ — Khashm el Girba",
+        "nameAr": "قيادة الفرقة 11 مشاة-خشم القربة",
+        "place": "Khashm el Girba",
+        "party": "saf",
+        "note": "Green pin on source map — treated as SAF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          35.90279,
+          14.95086
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-10",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "12th Infantry Division HQ — Sinkat",
+        "nameAr": "قيادة الفرقة 12 مشاة-سنكات",
+        "place": "Sinkat",
+        "party": "saf",
+        "note": "Green pin on source map — treated as SAF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.78195,
+          18.9391
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-11",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "14th Infantry Division HQ — Kadugli",
+        "nameAr": "قيادة الفرقة 14 مشاة-كادوقلي",
+        "place": "Kadugli",
+        "party": "saf",
+        "note": "Green pin on source map — treated as SAF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.72613,
+          10.98878
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-12",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "17th Infantry Division HQ — Singa",
+        "nameAr": "قيادة الفرقة 17 مشاة-سنجة",
+        "place": "Singa",
+        "party": "saf",
+        "note": "Green pin on source map — treated as SAF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.92576,
+          13.15439
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-13",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "18th Infantry Division HQ — Kosti",
+        "nameAr": "قيادة الفرقة 18 مشاة-كوستي",
+        "place": "Kosti",
+        "party": "saf",
+        "note": "Green pin on source map — treated as SAF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.59403,
+          13.14754
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-14",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "19th Infantry Division",
+        "nameAr": "الفرقة 19 مشاة",
+        "place": "Northern State / Dongola area",
+        "party": "saf",
+        "note": "Green pin on source map — treated as SAF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          31.87398,
+          18.506
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-15",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "6th Infantry Division",
+        "nameAr": "الفرقة السادسة مشاة",
+        "place": "El Fasher area",
+        "party": "rsf",
+        "note": "Amber pin on source map — treated as RSF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.34815,
+          13.62766
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-16",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "15th Infantry Division HQ — Geneina",
+        "nameAr": "قيادة الفرقة 15 مشاة",
+        "place": "Geneina",
+        "party": "rsf",
+        "note": "Source note: 15th Infantry Division HQ and all of Geneina reported fallen to RSF-labeled forces on 4 Nov 2023. Observation from the copied Vista map — not a confirmation of current occupancy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          22.44142,
+          13.44774
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-17",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "16th Infantry Division HQ",
+        "nameAr": "قيادة الفرقة 16 - مشاة",
+        "place": "Nyala area",
+        "party": "rsf",
+        "note": "Amber pin on source map — treated as RSF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.873,
+          12.04896
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-18",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "20th Infantry Division",
+        "nameAr": "الفرقة 20 مشاة",
+        "place": "South Darfur / Reika area",
+        "party": "rsf",
+        "note": "Amber pin on source map — treated as RSF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          26.11042,
+          11.39902
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-19",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "21st Infantry Division HQ",
+        "nameAr": "قيادة الفرقة 21 - مشاة",
+        "place": "Zalingei / Central Darfur area",
+        "party": "rsf",
+        "note": "Amber pin on source map — treated as RSF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          23.4602,
+          12.89845
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-div-20",
+        "kind": "division",
+        "layer": "divisions",
+        "name": "22nd Infantry Division HQ — Babanusa",
+        "nameAr": "قيادة الفرقة 22 مشاة -بابنوسة",
+        "place": "Babanusa",
+        "party": "rsf",
+        "note": "Amber pin on source map — treated as RSF-held in the Vista copy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.79772,
+          11.31521
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-zone-01",
+        "kind": "zone",
+        "layer": "control",
+        "name": "Disputed area — Halaib Triangle",
+        "nameAr": "مناطق متنازع عليها",
+        "faction": "disputed",
+        "color": "#9aa0a6",
+        "note": "Halaib / Shalateen triangle. Sudan cites 1902 colonial administration; Egypt cites the 1899 political boundary. Disputed — not a wartime control claim in this war.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)",
+        "npts": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              33.17245,
+              21.99478
+            ],
+            [
+              33.55971,
+              21.7233
+            ],
+            [
+              34.00329,
+              21.77177
+            ],
+            [
+              34.08625,
+              22.00898
+            ],
+            [
+              33.17245,
+              21.99478
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-zone-02",
+        "kind": "zone",
+        "layer": "control",
+        "name": "Disputed area — Abyei",
+        "nameAr": "منطقة متنازع عليها",
+        "faction": "disputed",
+        "color": "#9aa0a6",
+        "note": "Abyei: disputed between Sudan and South Sudan; oil and grazing. Not a SAF/RSF wartime front in this map.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)",
+        "npts": 12
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              27.81826,
+              10.17219
+            ],
+            [
+              27.8222,
+              9.8007
+            ],
+            [
+              27.89748,
+              9.61592
+            ],
+            [
+              28.04146,
+              9.34772
+            ],
+            [
+              28.74733,
+              9.34501
+            ],
+            [
+              28.7336,
+              9.40192
+            ],
+            [
+              28.78579,
+              9.46424
+            ],
+            [
+              28.78579,
+              9.49404
+            ],
+            [
+              29.00277,
+              9.67549
+            ],
+            [
+              29.01849,
+              9.72911
+            ],
+            [
+              29.00294,
+              10.17823
+            ],
+            [
+              27.81826,
+              10.17219
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-zone-03",
+        "kind": "zone",
+        "layer": "control",
+        "name": "SPLM-N (Abdelaziz al-Hilu)",
+        "nameAr": "قوات الحركة الشعبية-بقيادة عبد العزيز الحلو",
+        "faction": "splm",
+        "color": "#007276",
+        "note": "Polygon from the public Vista-copy My Map. Compiled control — not a live frontline and not occupancy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)",
+        "npts": 15
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              31.48997,
+              10.48133
+            ],
+            [
+              31.55318,
+              10.51614
+            ],
+            [
+              31.58344,
+              10.57794
+            ],
+            [
+              31.53818,
+              10.65251
+            ],
+            [
+              31.47642,
+              10.68388
+            ],
+            [
+              31.39324,
+              10.65505
+            ],
+            [
+              31.29537,
+              10.60553
+            ],
+            [
+              31.1778,
+              10.54025
+            ],
+            [
+              31.11217,
+              10.50355
+            ],
+            [
+              31.07951,
+              10.43713
+            ],
+            [
+              31.09255,
+              10.36801
+            ],
+            [
+              31.14677,
+              10.3097
+            ],
+            [
+              31.24004,
+              10.34259
+            ],
+            [
+              31.35537,
+              10.40088
+            ],
+            [
+              31.48997,
+              10.48133
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-zone-04",
+        "kind": "zone",
+        "layer": "control",
+        "name": "SLM (Abdel Wahid al-Nur)",
+        "nameAr": "حركة تحرير السودان - عبد الواحد نور",
+        "faction": "slm",
+        "color": "#7aa3d4",
+        "note": "Polygon from the public Vista-copy My Map. Compiled control — not a live frontline and not occupancy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)",
+        "npts": 8
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              23.94145,
+              12.65166
+            ],
+            [
+              24.82928,
+              12.64496
+            ],
+            [
+              24.8569,
+              13.34367
+            ],
+            [
+              24.99186,
+              13.36844
+            ],
+            [
+              24.9982,
+              13.55448
+            ],
+            [
+              24.51755,
+              13.57184
+            ],
+            [
+              23.93802,
+              13.14963
+            ],
+            [
+              23.94145,
+              12.65166
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-zone-05",
+        "kind": "zone",
+        "layer": "control",
+        "name": "RSF (source label) — pocket 1",
+        "nameAr": "RSF",
+        "faction": "rsf",
+        "color": "#c9a227",
+        "note": "Polygon from the public Vista-copy My Map. Compiled control — not a live frontline and not occupancy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)",
+        "npts": 23
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              25.00136,
+              20.53123
+            ],
+            [
+              25.00016,
+              19.99964
+            ],
+            [
+              24.00006,
+              19.9998
+            ],
+            [
+              23.9995,
+              19.50071
+            ],
+            [
+              26.04553,
+              20.03929
+            ],
+            [
+              26.13879,
+              22.01324
+            ],
+            [
+              24.99926,
+              22.00072
+            ],
+            [
+              24.63163,
+              22.25999
+            ],
+            [
+              24.29494,
+              22.29234
+            ],
+            [
+              24.19974,
+              22.80338
+            ],
+            [
+              23.78341,
+              22.89725
+            ],
+            [
+              23.36309,
+              24.04722
+            ],
+            [
+              23.34433,
+              24.20424
+            ],
+            [
+              23.3186,
+              24.2097
+            ],
+            [
+              23.29099,
+              24.15053
+            ],
+            [
+              23.2827,
+              24.08366
+            ],
+            [
+              23.29848,
+              23.82948
+            ],
+            [
+              23.49046,
+              22.39902
+            ],
+            [
+              23.7846,
+              22.37386
+            ],
+            [
+              23.86245,
+              21.77523
+            ],
+            [
+              24.27505,
+              21.73363
+            ],
+            [
+              24.43407,
+              20.5729
+            ],
+            [
+              25.00136,
+              20.53123
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-zone-06",
+        "kind": "zone",
+        "layer": "control",
+        "name": "RSF (source label) — pocket 2",
+        "nameAr": "RSF",
+        "faction": "rsf",
+        "color": "#c9a227",
+        "note": "Polygon from the public Vista-copy My Map. Compiled control — not a live frontline and not occupancy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)",
+        "npts": 88
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              34.76294,
+              10.75598
+            ],
+            [
+              34.77707,
+              10.7562
+            ],
+            [
+              34.79208,
+              10.75607
+            ],
+            [
+              34.79481,
+              10.7537
+            ],
+            [
+              34.7935,
+              10.75069
+            ],
+            [
+              34.79093,
+              10.74803
+            ],
+            [
+              34.79035,
+              10.74422
+            ],
+            [
+              34.79153,
+              10.7435
+            ],
+            [
+              34.79177,
+              10.74119
+            ],
+            [
+              34.79115,
+              10.73958
+            ],
+            [
+              34.79018,
+              10.73994
+            ],
+            [
+              34.78922,
+              10.7403
+            ],
+            [
+              34.78885,
+              10.73971
+            ],
+            [
+              34.78941,
+              10.73592
+            ],
+            [
+              34.78945,
+              10.73303
+            ],
+            [
+              34.7905,
+              10.732
+            ],
+            [
+              34.79168,
+              10.73122
+            ],
+            [
+              34.79181,
+              10.73044
+            ],
+            [
+              34.79077,
+              10.72729
+            ],
+            [
+              34.79084,
+              10.72531
+            ],
+            [
+              34.79002,
+              10.72339
+            ],
+            [
+              34.78837,
+              10.72246
+            ],
+            [
+              34.78715,
+              10.72145
+            ],
+            [
+              34.7856,
+              10.72109
+            ],
+            [
+              34.78488,
+              10.72054
+            ],
+            [
+              34.78355,
+              10.71919
+            ],
+            [
+              34.78123,
+              10.71885
+            ],
+            [
+              34.78054,
+              10.71679
+            ],
+            [
+              34.7814,
+              10.71539
+            ],
+            [
+              34.7805,
+              10.71244
+            ],
+            [
+              34.7787,
+              10.71143
+            ],
+            [
+              34.77719,
+              10.70928
+            ],
+            [
+              34.78037,
+              10.70924
+            ],
+            [
+              34.78247,
+              10.71046
+            ],
+            [
+              34.78432,
+              10.70827
+            ],
+            [
+              34.78488,
+              10.70683
+            ],
+            [
+              34.78711,
+              10.70629
+            ],
+            [
+              34.79949,
+              10.72056
+            ],
+            [
+              34.80451,
+              10.72579
+            ],
+            [
+              34.80872,
+              10.72684
+            ],
+            [
+              34.81086,
+              10.72655
+            ],
+            [
+              34.81249,
+              10.72457
+            ],
+            [
+              34.81384,
+              10.72752
+            ],
+            [
+              34.81831,
+              10.74649
+            ],
+            [
+              34.81952,
+              10.75509
+            ],
+            [
+              34.81806,
+              10.77591
+            ],
+            [
+              34.81587,
+              10.78019
+            ],
+            [
+              34.80304,
+              10.79459
+            ],
+            [
+              34.79334,
+              10.82119
+            ],
+            [
+              34.83305,
+              10.8723
+            ],
+            [
+              34.88558,
+              10.9404
+            ],
+            [
+              34.88419,
+              10.94766
+            ],
+            [
+              34.8622,
+              10.97784
+            ],
+            [
+              34.85771,
+              10.97753
+            ],
+            [
+              34.84083,
+              10.98087
+            ],
+            [
+              34.82479,
+              10.98127
+            ],
+            [
+              34.79005,
+              10.98531
+            ],
+            [
+              34.78277,
+              10.99482
+            ],
+            [
+              34.76081,
+              11.01356
+            ],
+            [
+              34.73129,
+              11.23374
+            ],
+            [
+              34.71233,
+              11.25085
+            ],
+            [
+              34.69741,
+              11.25917
+            ],
+            [
+              34.68481,
+              11.26204
+            ],
+            [
+              34.66299,
+              11.25885
+            ],
+            [
+              34.64182,
+              11.25565
+            ],
+            [
+              34.61847,
+              11.25126
+            ],
+            [
+              34.59552,
+              11.22708
+            ],
+            [
+              34.59456,
+              11.22176
+            ],
+            [
+              34.62311,
+              11.14369
+            ],
+            [
+              34.62557,
+              11.13298
+            ],
+            [
+              34.66233,
+              10.98682
+            ],
+            [
+              34.66539,
+              10.97856
+            ],
+            [
+              34.67234,
+              10.96516
+            ],
+            [
+              34.67309,
+              10.9633
+            ],
+            [
+              34.67135,
+              10.96079
+            ],
+            [
+              34.67056,
+              10.95414
+            ],
+            [
+              34.66802,
+              10.95028
+            ],
+            [
+              34.66356,
+              10.94631
+            ],
+            [
+              34.65601,
+              10.94421
+            ],
+            [
+              34.64747,
+              10.93968
+            ],
+            [
+              34.64576,
+              10.93746
+            ],
+            [
+              34.6384,
+              10.92978
+            ],
+            [
+              34.63233,
+              10.9257
+            ],
+            [
+              34.62973,
+              10.92154
+            ],
+            [
+              34.61708,
+              10.91772
+            ],
+            [
+              34.60528,
+              10.90548
+            ],
+            [
+              34.70233,
+              10.82265
+            ],
+            [
+              34.76294,
+              10.75598
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-zone-07",
+        "kind": "zone",
+        "layer": "control",
+        "name": "RSF (source label) — pocket 3",
+        "nameAr": "RSF",
+        "faction": "rsf",
+        "color": "#c9a227",
+        "note": "Polygon from the public Vista-copy My Map. Compiled control — not a live frontline and not occupancy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)",
+        "npts": 68
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              34.30333,
+              10.38067
+            ],
+            [
+              34.29734,
+              10.39554
+            ],
+            [
+              34.30824,
+              10.45472
+            ],
+            [
+              34.29587,
+              10.48241
+            ],
+            [
+              34.28025,
+              10.53848
+            ],
+            [
+              34.28283,
+              10.53969
+            ],
+            [
+              34.28659,
+              10.5477
+            ],
+            [
+              34.29172,
+              10.55571
+            ],
+            [
+              34.2968,
+              10.5729
+            ],
+            [
+              34.29493,
+              10.57944
+            ],
+            [
+              34.28059,
+              10.57658
+            ],
+            [
+              34.26892,
+              10.57489
+            ],
+            [
+              34.25742,
+              10.57287
+            ],
+            [
+              34.23991,
+              10.5727
+            ],
+            [
+              34.21589,
+              10.57104
+            ],
+            [
+              34.2141,
+              10.57046
+            ],
+            [
+              34.19927,
+              10.56617
+            ],
+            [
+              34.17901,
+              10.57124
+            ],
+            [
+              34.13643,
+              10.6097
+            ],
+            [
+              34.11755,
+              10.66232
+            ],
+            [
+              34.11703,
+              10.7531
+            ],
+            [
+              34.11527,
+              10.75525
+            ],
+            [
+              34.06226,
+              10.77599
+            ],
+            [
+              33.98329,
+              10.85793
+            ],
+            [
+              33.95581,
+              10.93278
+            ],
+            [
+              33.93933,
+              10.95638
+            ],
+            [
+              33.89675,
+              10.97795
+            ],
+            [
+              33.82914,
+              11.04769
+            ],
+            [
+              33.80819,
+              11.12687
+            ],
+            [
+              33.76628,
+              11.14507
+            ],
+            [
+              33.71959,
+              11.14305
+            ],
+            [
+              33.6365,
+              11.14372
+            ],
+            [
+              33.60355,
+              11.14572
+            ],
+            [
+              33.55687,
+              11.14235
+            ],
+            [
+              33.52128,
+              11.07878
+            ],
+            [
+              33.41013,
+              11.02931
+            ],
+            [
+              33.23276,
+              11.05014
+            ],
+            [
+              33.2719,
+              10.831
+            ],
+            [
+              33.24511,
+              10.77909
+            ],
+            [
+              33.51544,
+              10.64559
+            ],
+            [
+              33.66869,
+              10.44601
+            ],
+            [
+              33.8065,
+              10.33319
+            ],
+            [
+              33.90182,
+              10.17362
+            ],
+            [
+              33.97155,
+              10.1518
+            ],
+            [
+              33.96545,
+              10.12437
+            ],
+            [
+              33.97248,
+              10.08845
+            ],
+            [
+              33.99751,
+              10.06529
+            ],
+            [
+              33.99053,
+              10.03358
+            ],
+            [
+              33.99855,
+              9.99991
+            ],
+            [
+              33.98849,
+              9.96778
+            ],
+            [
+              33.99217,
+              9.93025
+            ],
+            [
+              33.96575,
+              9.80987
+            ],
+            [
+              33.93764,
+              9.77205
+            ],
+            [
+              33.9144,
+              9.76678
+            ],
+            [
+              33.89264,
+              9.67765
+            ],
+            [
+              33.87639,
+              9.49917
+            ],
+            [
+              34.10807,
+              9.50407
+            ],
+            [
+              34.09904,
+              9.56205
+            ],
+            [
+              34.16456,
+              9.76976
+            ],
+            [
+              34.22346,
+              9.88581
+            ],
+            [
+              34.21313,
+              9.92965
+            ],
+            [
+              34.23576,
+              10.056
+            ],
+            [
+              34.33137,
+              10.11859
+            ],
+            [
+              34.32235,
+              10.13661
+            ],
+            [
+              34.33568,
+              10.17671
+            ],
+            [
+              34.34508,
+              10.2319
+            ],
+            [
+              34.33466,
+              10.29327
+            ],
+            [
+              34.30333,
+              10.38067
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-zone-08",
+        "kind": "zone",
+        "layer": "control",
+        "name": "SAF (source label)",
+        "nameAr": "SAF",
+        "faction": "saf",
+        "color": "#3d8b3d",
+        "note": "Polygon from the public Vista-copy My Map. Compiled control — not a live frontline and not occupancy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)",
+        "npts": 20
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              29.68073,
+              11.64282
+            ],
+            [
+              29.82587,
+              11.62707
+            ],
+            [
+              29.85541,
+              11.7344
+            ],
+            [
+              29.97515,
+              11.88249
+            ],
+            [
+              29.9405,
+              11.94514
+            ],
+            [
+              29.93182,
+              12.33536
+            ],
+            [
+              29.73972,
+              12.16198
+            ],
+            [
+              29.70814,
+              12.1683
+            ],
+            [
+              29.66558,
+              12.17427
+            ],
+            [
+              29.61957,
+              12.16883
+            ],
+            [
+              29.59282,
+              12.15279
+            ],
+            [
+              29.57294,
+              12.13071
+            ],
+            [
+              29.5634,
+              12.104
+            ],
+            [
+              29.56209,
+              12.07326
+            ],
+            [
+              29.56816,
+              12.02077
+            ],
+            [
+              29.58854,
+              11.96414
+            ],
+            [
+              29.66776,
+              11.90729
+            ],
+            [
+              29.71269,
+              11.84921
+            ],
+            [
+              29.71113,
+              11.74051
+            ],
+            [
+              29.68073,
+              11.64282
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-zone-09",
+        "kind": "zone",
+        "layer": "control",
+        "name": "New control area (source, unlabeled)",
+        "nameAr": "منطقة سيطرة جديدة",
+        "faction": "change",
+        "color": "#5a5a5a",
+        "note": "Polygon from the public Vista-copy My Map. Compiled control — not a live frontline and not occupancy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)",
+        "npts": 17
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              28.88074,
+              15.54217
+            ],
+            [
+              28.83211,
+              15.23572
+            ],
+            [
+              28.82845,
+              15.10495
+            ],
+            [
+              29.15987,
+              14.68601
+            ],
+            [
+              29.26149,
+              14.57971
+            ],
+            [
+              29.3036,
+              14.42504
+            ],
+            [
+              29.3563,
+              14.21042
+            ],
+            [
+              29.44082,
+              14.12071
+            ],
+            [
+              29.92158,
+              14.20049
+            ],
+            [
+              30.24477,
+              14.20771
+            ],
+            [
+              30.38143,
+              14.13265
+            ],
+            [
+              30.42399,
+              14.25381
+            ],
+            [
+              30.0541,
+              14.72845
+            ],
+            [
+              29.92043,
+              14.96562
+            ],
+            [
+              29.53042,
+              15.07969
+            ],
+            [
+              29.35017,
+              15.10554
+            ],
+            [
+              28.88074,
+              15.54217
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "vista-zone-10",
+        "kind": "zone",
+        "layer": "control",
+        "name": "Control change (source, unlabeled)",
+        "nameAr": "تغير سيطرة",
+        "faction": "change",
+        "color": "#5a5a5a",
+        "note": "Polygon from the public Vista-copy My Map. Compiled control — not a live frontline and not occupancy.",
+        "source": "Google My Map copy of Vista / Ra'ad (public)",
+        "npts": 7
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              23.70234,
+              15.06285
+            ],
+            [
+              23.68584,
+              15.01244
+            ],
+            [
+              23.72065,
+              14.93656
+            ],
+            [
+              23.78477,
+              14.8046
+            ],
+            [
+              23.96733,
+              14.9744
+            ],
+            [
+              23.75726,
+              15.07515
+            ],
+            [
+              23.70234,
+              15.06285
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

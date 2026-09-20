@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { IMAGERY, type ImagerySource, type LiveMeta } from "@/lib/types";
 import { RSF_WATCH } from "@/data/rsf-watch";
+import { VISTA } from "@/lib/vista-map";
 import { useAppStore, type LayerKey } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -111,6 +112,7 @@ export function LayerStack({
   const rows: { key: LayerKey; label: string; count?: number; icon: typeof Flame }[] = [
     { key: "ai", label: "AI events", count: counts.ai, icon: Sparkles },
     { key: "rsfWatch", label: "RSF watch", count: RSF_WATCH.length, icon: Shield },
+    { key: "vista", label: "Vista map", count: VISTA.features.length, icon: Shield },
     { key: "reports", label: "Reports", count: counts.reports, icon: Radio },
     { key: "news", label: "News", count: counts.news, icon: Newspaper },
     { key: "firms", label: "Fire hotspots", count: counts.fires, icon: Flame },

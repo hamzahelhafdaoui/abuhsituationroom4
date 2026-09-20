@@ -36,7 +36,8 @@ export type LayerKey =
   | "osm"
   | "vessels"
   | "corridors"
-  | "rsfWatch";
+  | "rsfWatch"
+  | "vista";
 
 export type RightTab = "log" | "queue" | "news" | "brief" | "reports" | "feeds" | "fuae" | "rsf";
 
@@ -45,6 +46,11 @@ export interface FlyTarget {
   lon: number;
   zoom: number;
   label?: string;
+  west?: number;
+  south?: number;
+  east?: number;
+  north?: number;
+  inspect?: boolean;
 }
 
 interface Review {
@@ -131,6 +137,8 @@ interface AppState {
   setListOrder: (o: ListOrder) => void;
   modelWeights: typeof DEFAULT_WEIGHTS;
   trainModel: (features: ChipFeatures, klass: ModelKlass, confirmed: boolean) => void;
+  setModelWeights: (w: typeof DEFAULT_WEIGHTS) => void;
+  chipSamples: Array<{ features: ChipFeatures; klass: ModelKlass; label: 0 | 1; at: string }>;
   look: LookId;
   setLook: (l: LookId) => void;
   orbitOn: boolean;
@@ -190,6 +198,7 @@ export const useAppStore = create<AppState>()(
         vessels: true,
         corridors: true,
         rsfWatch: true,
+        vista: true,
       },
       imagery: "s2cloudless",
       date: daysAgo(4),
@@ -220,6 +229,7 @@ export const useAppStore = create<AppState>()(
       fuaeLog: [],
       listOrder: "newest",
       modelWeights: DEFAULT_WEIGHTS,
+      chipSamples: [],
       setSelectedSite: (id) => set({ selectedSiteId: id, focusedBoxId: null, selectedReportId: null }),
       setSelectedAlert: (id) => set({ selectedAlertId: id }),
       setFocusedBox: (id) => set({ focusedBoxId: id, selectedSiteId: null, selectedAlertId: null }),
@@ -343,8 +353,13 @@ export const useAppStore = create<AppState>()(
       trainModel: (features, klass, confirmed) =>
         set((s) => ({
           modelWeights: trainChip(s.modelWeights, features, klass, confirmed),
+          chipSamples: [
+            { features, klass, label: (confirmed ? 1 : 0) as 0 | 1, at: new Date().toISOString() },
+            ...s.chipSamples,
+          ].slice(0, 400),
           audit: [audit("chip-train", klass, confirmed ? "confirm" : "reject"), ...s.audit].slice(0, 200),
         })),
+      setModelWeights: (modelWeights) => set({ modelWeights }),
     }),
     {
       name: "ahsr-sudan-v2",
@@ -367,6 +382,7 @@ export const useAppStore = create<AppState>()(
         fuaeLog: s.fuaeLog,
         listOrder: s.listOrder,
         modelWeights: s.modelWeights,
+        chipSamples: s.chipSamples,
         look: s.look,
       }),
       merge: (persisted, current) => {
@@ -390,11 +406,13 @@ export const useAppStore = create<AppState>()(
             gdelt: p.layers?.gdelt ?? true,
             corridors: p.layers?.corridors ?? true,
             rsfWatch: p.layers?.rsfWatch ?? true,
+            vista: p.layers?.vista ?? true,
           },
           controlUpdates: p.controlUpdates ?? [],
           fuaeLog: p.fuaeLog ?? [],
           listOrder: p.listOrder === "oldest" ? "oldest" : "newest",
           modelWeights: p.modelWeights ?? DEFAULT_WEIGHTS,
+          chipSamples: Array.isArray(p.chipSamples) ? p.chipSamples.slice(0, 400) : [],
           look: p.look === "crt" || p.look === "nvg" || p.look === "flir" || p.look === "noir" || p.look === "snow" ? p.look : "none",
           helpOpen: false,
           helpSeen: Boolean(p.helpSeen) || p.helpOpen === false,

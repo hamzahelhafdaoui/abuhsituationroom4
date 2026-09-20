@@ -128,3 +128,21 @@ export function featuresFromShape(
     meanL: sm.meanL,
   };
 }
+
+export function serializeWeights(w: Record<ModelKlass, Weights>) {
+  return JSON.stringify({ version: 1, kind: "ahsr-chip-weights", weights: w }, null, 2);
+}
+
+export function parseWeights(raw: string): Record<ModelKlass, Weights> | null {
+  try {
+    const j = JSON.parse(raw) as { kind?: string; weights?: Record<ModelKlass, Partial<Weights>> };
+    if (!j.weights) return null;
+    const next = structuredClone(DEFAULT_WEIGHTS);
+    (Object.keys(DEFAULT_WEIGHTS) as ModelKlass[]).forEach((k) => {
+      if (j.weights?.[k]) next[k] = { ...DEFAULT_WEIGHTS[k], ...j.weights[k] };
+    });
+    return next;
+  } catch {
+    return null;
+  }
+}

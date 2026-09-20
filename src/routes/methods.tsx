@@ -55,6 +55,39 @@ function Methods() {
         chips. Scheduled passenger services are low priority unless they divert to unusual fields.
       </p>
 
+      <h2 id="colab">Train a better chip model on Google Colab</h2>
+      <p>
+        The sitroom’s auto-find is a weak-supervised linear classifier on seven chip stats
+        (blobs, HV edges, edge density, excess-green, red, bitemporal delta, mean luminance).
+        Confirm / Reject in the queue is the training step. That is not YOLO. To fit a stronger
+        model on the same blueprint classes, use Colab:
+      </p>
+      <ol>
+        <li>In the imagery sweep panel, press <strong>Export labels</strong> (your Confirm/Reject chips) and <strong>Export weights</strong> (current priors).</li>
+        <li>Download <a href="/sudan-chip-train.ipynb">sudan-chip-train.ipynb</a> from this workbench.</li>
+        <li>Open <a href="https://colab.research.google.com/">Google Colab</a> → File → Upload notebook → the ipynb.</li>
+        <li>Runtime → Change runtime type → GPU (T4 is enough).</li>
+        <li>Upload <code>ahsr-chip-samples.json</code> when the notebook asks. It trains a multinomial logistic model on the seven features (and optionally pulls Sentinel-2 HLS chips around each lat/lon if you enable Path B).</li>
+        <li>The last cell writes <code>ahsr-chip-weights.json</code>. Download it.</li>
+        <li>Back in the sitroom, <strong>Import Colab JSON</strong>. The next sweep uses those weights. Confirm/Reject still updates them online.</li>
+      </ol>
+      <p>
+        Blueprint classes: <code>camp</code>, <code>veh</code>, <code>berm</code>, <code>burn</code>,{" "}
+        <code>wreck_air</code>, <code>wreck_bldg</code>, <code>cargo</code>, <code>none</code>.
+        Label morphology, not weapons. A burn scar is a scar. A pad is a pad. Occupancy and cargo
+        remain human calls.
+      </p>
+
+      <h2>What was borrowed from the other workbenches</h2>
+      <p>
+        Public-code ideas only — not their brand, not their keys, not targeting:
+      </p>
+      <ul>
+        <li><strong>War-Probability-OSINT</strong> — multi-domain fusion of weak signals (airlift, tankers, thermal, GDELT, headlines, UAE→Africa tracks) as a coincidence meter, not a war forecast.</li>
+        <li><strong>IRONSIGHT</strong> — theater-scoped public RSS + ADS-B.lol + FIRMS, no keys. Already how this desk ingest works.</li>
+        <li><strong>OSINT-War-Room</strong> — GDELT pulse + OSM military as observation layers.</li>
+        <li><strong>aegis-osint-map / Shadowbroker / velocity</strong> — live flights/ships/bases on one dark map; inspect-to-yard zoom; human HITL before any claim.</li>
+      </ul>
       <h2>Six-hour analytical engine</h2>
       <p>
         Every sweep compiles a commander one-pager in the Brief tab from the live ingest and the

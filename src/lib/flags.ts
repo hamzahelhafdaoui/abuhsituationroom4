@@ -1,5 +1,5 @@
 import { ALERTS } from "@/data/catalog";
-import type { DetectHit } from "@/lib/imagery-detect";
+import type { DetectHit, DetectKlass } from "@/lib/imagery-detect";
 import type { OsintReport } from "@/lib/osint";
 import type { ChipFeatures, ModelKlass } from "@/lib/chip-model";
 import type { Alert, AlertType, Confidence, IndicatorFamily, ReviewState } from "@/lib/types";
@@ -24,6 +24,11 @@ export interface Flag {
   review: ReviewState;
   features?: ChipFeatures;
   modelKlass?: ModelKlass;
+  klass?: DetectKlass;
+  west?: number;
+  south?: number;
+  east?: number;
+  north?: number;
 }
 
 export function sortByOrder<T>(rows: T[], order: ListOrder, key: (t: T) => string): T[] {
@@ -127,6 +132,11 @@ export function detectToFlags(hits: DetectHit[]): Flag[] {
       siteId: h.siteId,
       review: "unreviewed",
       features: h.features,
+      klass: h.klass,
+      west: h.west,
+      south: h.south,
+      east: h.east,
+      north: h.north,
       modelKlass:
         h.klass === "camp_buildup"
           ? "camp"

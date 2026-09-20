@@ -6,6 +6,7 @@ import { controlZonesFor, isUsefulOsm, mergedControlCities } from "@/lib/control
 import { circlePoly, type BriefAnno } from "@/lib/briefing";
 import { DETECT_KLASS, type DetectHit } from "@/lib/imagery-detect";
 import { rsfWatchResolved } from "@/data/rsf-watch";
+import { vistaDivFc, vistaZonesFc } from "@/lib/vista-map";
 import type { FuaeRecord } from "@/lib/fuae";
 import { CORRIDORS, THEATER_BY_ID } from "@/lib/theaters";
 import { SEA_LANES, allVessels, deadReckon } from "@/lib/traffic";
@@ -24,7 +25,7 @@ import {
 } from "@/lib/types";
 import { useAppStore } from "@/lib/store";
 import { cn, snapshotUrl } from "@/lib/utils";
-import { cinematicFly, pitchForZoom, spyEase } from "@/lib/spy-cam";
+import { cinematicFit, cinematicFly, pitchForZoom, spyEase } from "@/lib/spy-cam";
 import { LookFx } from "@/components/sensor-fx";
 
 const PARTY_COLOR: Record<string, string> = {
@@ -652,6 +653,46 @@ export function MapCanvas({
           paint: { "text-color": "#e8f6ee", "text-halo-color": "#07090b", "text-halo-width": 1.4 },
         });
 
+        map.addSource("vista-zones", { type: "geojson", data: vistaZonesFc() });
+        map.addLayer({
+          id: "vista-fill",
+          type: "fill",
+          source: "vista-zones",
+          paint: { "fill-color": ["get", "color"], "fill-opacity": 0.32 },
+        }, "sites");
+        map.addLayer({
+          id: "vista-line",
+          type: "line",
+          source: "vista-zones",
+          paint: { "line-color": ["get", "color"], "line-width": 1.8, "line-opacity": 0.95 },
+        }, "sites");
+        map.addSource("vista-div", { type: "geojson", data: vistaDivFc() });
+        map.addLayer({
+          id: "vista-div",
+          type: "circle",
+          source: "vista-div",
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 4.2, 10, 8],
+            "circle-color": ["match", ["get", "party"], "saf", "#3d8b3d", "rsf", "#c9a227", "#8a857c"],
+            "circle-stroke-width": 1.6,
+            "circle-stroke-color": "#07090b",
+          },
+        });
+        map.addLayer({
+          id: "vista-div-label",
+          type: "symbol",
+          source: "vista-div",
+          minzoom: 5.6,
+          layout: {
+            "text-field": ["get", "name"],
+            "text-size": 10,
+            "text-offset": [0, 1.15],
+            "text-anchor": "top",
+            "text-allow-overlap": false,
+          },
+          paint: { "text-color": "#e8f6ee", "text-halo-color": "#07090b", "text-halo-width": 1.3 },
+        });
+
         map.addSource("osint-reports", { type: "geojson", data: pointFc(reports, (r) => ({ name: r.title, category: r.category })) });
         map.addLayer({ id: "osint-reports", type: "circle", source: "osint-reports", paint: { "circle-radius": 6, "circle-color": "#ece8e1", "circle-stroke-width": 2, "circle-stroke-color": "#b45a3c" } });
 
@@ -786,6 +827,23 @@ export function MapCanvas({
       bindPopup("news-pts", (p) => `<div style="font:500 12px/1.35 'IBM Plex Sans',system-ui">${p.name} · ${p.count} headlines<div style="opacity:.7;font-size:11px">Named-place centroid</div></div>`);
       bindPopup("brief-pts", (p) => `<div style="max-width:260px;font:500 12px/1.4 'IBM Plex Sans',system-ui"><div>${p.title}</div><div style="opacity:.75;font-size:11px;margin-top:4px">${p.claim} · ${p.confidence}</div><div style="font-weight:400;font-size:11px;margin-top:6px">${p.paragraph ?? ""}</div><div style="opacity:.65;font-size:10px;margin-top:6px">${p.sources ?? ""}</div></div>`);
       bindPopup("rsf-watch", (p) => `<div style="max-width:260px;font:500 12px/1.4 'IBM Plex Sans',system-ui"><div>${p.name}</div><div style="opacity:.75;font-size:11px;margin-top:4px">RSF watch · ${p.why} · observation</div><div style="font-weight:400;font-size:11px;margin-top:6px">${p.note ?? ""}</div></div>`);
+      bindPopup("vista-div", (p) => `<div style="max-width:280px;font:500 12px/1.4 'IBM Plex Sans',system-ui"><div>${p.name}</div><div style="opacity:.7;font-size:11px;margin-top:4px">${p.place ?? ""} · ${p.party === "rsf" ? "Amber pin on source map (RSF-held in copy)" : "Green pin on source map (SAF-held in copy)"}</div><div style="font-weight:400;font-size:11px;margin-top:6px">${p.note ?? ""}</div><div style="opacity:.65;font-size:10px;margin-top:6px">Vista copy · ${p.nameAr ?? ""} · not occupancy</div></div>`);
+      map.on("click", "vista-fill", (e) => {
+        const p = e.features?.[0]?.properties as Record<string, unknown> | undefined;
+        if (!p || !map) return;
+        hoverPopup.current?.remove();
+        hoverPopup.current = new Popup({ closeButton: true, offset: 10, className: "sr-popup" })
+          .setLngLat(e.lngLat)
+          .setHTML(`<div style="max-width:280px;font:500 12px/1.4 'IBM Plex Sans',system-ui"><div>${p.name}</div><div style="opacity:.75;font-size:11px;margin-top:4px">Vista copy control polygon</div><div style="font-weight:400;font-size:11px;margin-top:6px">${p.note ?? ""}</div><div style="opacity:.65;font-size:10px;margin-top:6px">Compiled control — not a live frontline.</div></div>`)
+          .addTo(map);
+      });
+      map.on("click", "vista-div", (e) => {
+        const feat = e.features?.[0];
+        if (!feat || feat.geometry.type !== "Point") return;
+        const [lon, lat] = feat.geometry.coordinates as [number, number];
+        const name = (feat.properties as { name?: string })?.name;
+        setFlyTarget({ lat, lon, zoom: 12.4, label: name });
+      });
       map.on("click", "rsf-watch", (e) => {
         const id = e.features?.[0]?.properties?.id as string | undefined;
         if (id) setSelectedSite(id);
@@ -931,6 +989,11 @@ export function MapCanvas({
     setVis("control-cities", controlOn);
     setVis("control-labels", controlOn);
     if (map.getLayer("control-fill")) map.setPaintProperty("control-fill", "fill-opacity", 0.22);
+    const vistaOn = layers.vista !== false;
+    setVis("vista-fill", vistaOn && imagery === "dark");
+    setVis("vista-line", vistaOn);
+    setVis("vista-div", vistaOn);
+    setVis("vista-div-label", vistaOn);
     setVis("osint-reports", layers.reports);
     setVis("news-pts", layers.news);
     setVis("ai-pts", layers.ai);
@@ -1069,7 +1132,18 @@ export function MapCanvas({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !flyTarget) return;
-    cinematicFly(map, { lon: flyTarget.lon, lat: flyTarget.lat, zoom: flyTarget.zoom, label: flyTarget.label });
+    if (flyTarget.west != null && flyTarget.south != null && flyTarget.east != null && flyTarget.north != null) {
+      cinematicFit(map, {
+        west: flyTarget.west,
+        south: flyTarget.south,
+        east: flyTarget.east,
+        north: flyTarget.north,
+        zoom: flyTarget.zoom,
+        label: flyTarget.label,
+      });
+    } else {
+      cinematicFly(map, { lon: flyTarget.lon, lat: flyTarget.lat, zoom: flyTarget.zoom, label: flyTarget.label });
+    }
     setFlyTarget(null);
   }, [flyTarget, setFlyTarget]);
 

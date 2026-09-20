@@ -258,6 +258,7 @@ export function LeftRail(props: {
               ["sites", "Sites", Shield],
               ["boxes", "Watch boxes", Eye],
               ["control", "Control areas", Shield],
+              ["vista", "Vista control map", Shield],
               ["reports", "OSINT reports", FileText],
               ["news", "News pins", Search],
               ["ai", "AI brief pins", FileText],

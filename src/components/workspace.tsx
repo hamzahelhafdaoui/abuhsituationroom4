@@ -9,13 +9,16 @@ import { getNewsFeed } from "@/lib/news";
 import { generateAiBrief } from "@/lib/ai-brief";
 import { compileSitrep, type Sitrep } from "@/lib/sitrep";
 import { composeBriefing } from "@/lib/briefing";
-import { fuseDetect, runDetect, type DetectReport } from "@/lib/imagery-detect";
+import { fuseDetect, runDetect, type DetectHit, type DetectReport } from "@/lib/imagery-detect";
 import { allVessels, mergeFlights } from "@/lib/traffic";
 import { scanFuae, seedFuae, type FuaeRecord } from "@/lib/fuae";
 import type { Flag } from "@/lib/flags";
 import { SEED_REPORTS } from "@/lib/osint";
 import { GDELT_ARCHIVE, OSM_SEED, FEED_SEED } from "@/lib/warroom-data";
 import { THEATER_BY_ID, THEATERS } from "@/lib/theaters";
+import { inspectFromFlag, inspectFromHit } from "@/lib/inspect-zoom";
+import { signalCoincidence } from "@/lib/fusion";
+import { VISTA_DIVS } from "@/lib/vista-map";
 import { IMAGERY, siteInKindGroup, type AiBrief, type FlightEvent, type LiveBundle, type ReviewState, type ThermalEvent } from "@/lib/types";
 import { useAppStore, useVisibleBoxes } from "@/lib/store";
 import { cn, daysAgo, mapCommand, mapFit, mapMeasure } from "@/lib/utils";
@@ -415,12 +418,18 @@ export function Workspace() {
 
   const searchHits = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (q.length < 2) return { siteHits: [] as typeof SITES, alertHits: [] as typeof ALERTS };
+    if (q.length < 2) return { siteHits: [] as typeof SITES, alertHits: [] as typeof ALERTS, vistaHits: [] as typeof VISTA_DIVS };
     const siteHits = SITES.filter(
       (s) => s.name.toLowerCase().includes(q) || s.admin1.toLowerCase().includes(q) || s.kind.includes(q),
     ).slice(0, 6);
     const alertHits = ALERTS.filter((a) => a.title.toLowerCase().includes(q)).slice(0, 4);
-    return { siteHits, alertHits };
+    const vistaHits = VISTA_DIVS.filter(
+      (f) =>
+        f.properties.name.toLowerCase().includes(q) ||
+        f.properties.nameAr.includes(query.trim()) ||
+        (f.properties.place ?? "").toLowerCase().includes(q),
+    ).slice(0, 6);
+    return { siteHits, alertHits, vistaHits };
   }, [query]);
 
   const selectedSite = SITES.find((s) => s.id === selectedSiteId) ?? null;
@@ -538,8 +547,9 @@ export function Workspace() {
     setFlyTarget({ lat: a.lat, lon: a.lon, zoom: 8.2, label: a.title });
   }
 
-  function openDetect(hit: { lat: number; lon: number; siteId?: string; title: string }) {
-    setFlyTarget({ lat: hit.lat, lon: hit.lon, zoom: 11.2, label: hit.title });
+  function openDetect(hit: DetectHit) {
+    setImagery("hires");
+    setFlyTarget(inspectFromHit(hit));
     if (hit.siteId) setSelectedSite(hit.siteId);
   }
 
@@ -589,7 +599,8 @@ export function Workspace() {
     },
     detections: detectReport?.hits ?? [],
     onOpenFlag: (f: Flag) => {
-      setFlyTarget({ lat: f.lat, lon: f.lon, zoom: 11.2, label: f.title });
+      setImagery("hires");
+      setFlyTarget(inspectFromFlag(f));
       if (f.siteId) setSelectedSite(f.siteId);
       if (f.id.startsWith("flag-rep-")) {
         setSelectedReport(f.id.slice("flag-rep-".length));
@@ -650,11 +661,11 @@ export function Workspace() {
                   setSearchOpen(true);
                 }}
                 onFocus={() => setSearchOpen(true)}
-                placeholder="Jump to a site or alert  ·  /"
+                placeholder="Jump to a site, division, or alert  ·  /"
                 className="h-11 w-full bg-transparent pl-10 pr-3 text-sm text-fg placeholder:text-subtle"
               />
             </label>
-            {searchOpen && query.trim().length >= 2 && (searchHits.siteHits.length + searchHits.alertHits.length) > 0 ? (
+            {searchOpen && query.trim().length >= 2 && (searchHits.siteHits.length + searchHits.alertHits.length + searchHits.vistaHits.length) > 0 ? (
               <div className="hud-panel absolute inset-x-0 top-[calc(100%+6px)] z-30 overflow-hidden py-1">
                 {searchHits.siteHits.map((s) => (
                   <button
@@ -670,6 +681,22 @@ export function Workspace() {
                   >
                     <span>{s.name}</span>
                     <span className="text-xs text-subtle">{s.kind} · {s.admin1}</span>
+                  </button>
+                ))}
+                {searchHits.vistaHits.map((f) => (
+                  <button
+                    key={f.properties.id}
+                    type="button"
+                    className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-raised"
+                    onClick={() => {
+                      const [lon, lat] = f.geometry.coordinates;
+                      setFlyTarget({ lat, lon, zoom: 12.4, label: f.properties.name });
+                      setQuery("");
+                      setSearchOpen(false);
+                    }}
+                  >
+                    <span>{f.properties.name}</span>
+                    <span className="text-xs text-subtle">Vista · {f.properties.place}</span>
                   </button>
                 ))}
                 {searchHits.alertHits.map((a) => (
@@ -849,7 +876,18 @@ export function Workspace() {
             <ControlLegend open={legendOpen} onToggle={() => setLegendOpen((v) => !v)} />
           ) : null}
           {detectOn ? (
-            <DetectPanel report={detectReport} loading={detecting} onOpen={openDetect} />
+            <DetectPanel
+              report={detectReport}
+              loading={detecting}
+              onOpen={openDetect}
+              coincidence={signalCoincidence({
+                flights,
+                firms,
+                gdelt,
+                news: live?.news.length ?? 0,
+                fuae: fuaeLog,
+              })}
+            />
           ) : null}
         </div>
       </div>
@@ -968,7 +1006,7 @@ export function Workspace() {
                 <span className="text-fg">DOCS</span> (next to HUD / DET, or the <span className="text-fg">Briefs · logs · news</span> pill) opens news, log, brief, FUAE, queue. Closed by default so the satellite is not covered.
               </li>
               <li>
-                <span className="text-fg">Basemap picker</span> sits top-left: High-res Esri, Google satellite (compare yards/roofs), Sentinel-2 10 m, VIIRS daily, Dark context, dated HLS. Control shading (SAF cyan / RSF rust) is only on the dark map, not on satellite.
+                <span className="text-fg">Basemap picker</span> sits top-left: High-res Esri, Google satellite (compare yards/roofs), Sentinel-2 10 m, VIIRS daily, Dark context, dated HLS. Control shading (SAF cyan / RSF rust) is only on the dark map, not on satellite. <span className="text-fg">Vista</span> is the public Google My Map (copied from Vista, translated to English): 20 SAF division HQs and 10 control polygons. Fills on the dark map; pins and outlines stay on satellite.
               </li>
               <li>
                 Documentation archive only. No targeting, fire control, or kill-chain language. Public data.
