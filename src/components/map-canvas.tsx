@@ -1,3 +1,4 @@
+import { useAnalysisArea } from "@/lib/analysis-area";
 import { useEffect, useRef, useState } from "react";
 import type { Map as MlMap, RasterTileSource, StyleSpecification } from "maplibre-gl";
 import { SITES } from "@/data/catalog";
@@ -449,6 +450,7 @@ export function MapCanvas({
   const host = useRef<HTMLDivElement>(null);
   const wrap = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
+  const analysisOverlay = useAnalysisArea(s => s.overlay);
   const ready = useRef(false);
   const hoverPopup = useRef<{ remove: () => void } | null>(null);
   const flightSnap = useRef({ rows: flights, at: Date.now() });
@@ -507,6 +509,9 @@ export function MapCanvas({
       map.addControl(new ScaleControl({ maxWidth: 110, unit: "metric" }), "bottom-left");
       map.setPadding(hudPad(false));
       mapRef.current = map;
+      const updateAnalysisCenter = () => { if (map) { const c = map.getCenter(); useAnalysisArea.getState().setCenter([c.lng, c.lat]); } };
+      map.on("moveend", updateAnalysisCenter);
+      updateAnalysisCenter();
       try {
         map.scrollZoom.setWheelZoomRate(1 / 620);
         map.scrollZoom.setZoomRate(1 / 220);
@@ -880,8 +885,8 @@ export function MapCanvas({
         map.easeTo({ zoom: z, pitch: pitchForZoom(z), duration: 780, easing: spyEase, essential: true });
       };
       onFit = (ev: Event) => {
-        const b = (ev as CustomEvent<{ west: number; south: number; east: number; north: number }>).detail;
-        map?.fitBounds([[b.west, b.south], [b.east, b.north]], { padding: 48, duration: 1400, maxZoom: 11.5, pitch: 8, essential: true });
+        const b = (ev as CustomEvent<{ west: number; south: number; east: number; north: number; maxZoom?: number; pitch?: number }>).detail;
+        map?.fitBounds([[b.west, b.south], [b.east, b.north]], { padding: 48, duration: 1400, maxZoom: b.maxZoom ?? 11.5, pitch: b.pitch ?? 8, essential: true });
       };
       const measurePts: [number, number][] = [];
       onMeasure = () => {
@@ -952,6 +957,22 @@ export function MapCanvas({
   }, []);
 
   useEffect(() => {
+    const map=mapRef.current;if(!map||!mapReady)return;
+    for(const id of ['civilian-change-labels','civilian-change-lines','civilian-scene-layer'])if(map.getLayer(id))map.removeLayer(id);
+    for(const id of ['civilian-changes','civilian-scene'])if(map.getSource(id))map.removeSource(id);
+    if(!analysisOverlay)return;
+    map.addSource('civilian-scene',{type:'image',url:analysisOverlay.image,coordinates:analysisOverlay.corners as [[number,number],[number,number],[number,number],[number,number]]});
+    map.addLayer({id:'civilian-scene-layer',type:'raster',source:'civilian-scene',paint:{'raster-opacity':1,'raster-fade-duration':0}});
+    map.addSource('civilian-changes',{type:'geojson',data:analysisOverlay.features});
+    map.addLayer({id:'civilian-change-lines',type:'line',source:'civilian-changes',paint:{'line-color':'#ffbf69','line-width':2}});
+    map.addLayer({id:'civilian-change-labels',type:'symbol',source:'civilian-changes',layout:{'text-field':['get','label'],'text-size':12,'text-allow-overlap':true},paint:{'text-color':'#ffddaa','text-halo-color':'#102022','text-halo-width':2}});
+    const onCandidate=(e:any)=>{const id=e.features?.[0]?.properties?.reviewMarkId;if(id)window.dispatchEvent(new CustomEvent('civilian-candidate-select',{detail:id}));};
+    map.on('click','civilian-change-lines',onCandidate);
+    map.on('click','civilian-change-labels',onCandidate);
+    return()=>{map.off('click','civilian-change-lines',onCandidate);map.off('click','civilian-change-labels',onCandidate);};
+  },[analysisOverlay,mapReady]);
+
+  useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready.current) return;
     map.setPadding(hudPad(panelOpen));
@@ -1007,7 +1028,7 @@ export function MapCanvas({
     setVis("detect-fill", detectOn);
     setVis("detect-line", detectOn);
     setVis("detect-pts", detectOn);
-  }, [layers, imagery, briefingOn, detectOn]);
+  }, [layers, imagery, briefingOn, detectOn, mapReady]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -1190,7 +1211,7 @@ export function MapCanvas({
         <StaticSatellite date={date} boxes={boxes} firms={firms} flights={flights} onPick={setSelectedSite} />
       ) : null}
       <div ref={host} className={cn("h-full w-full", engine !== "gl" && "pointer-events-none opacity-0")} />
-      {engine === "gl" && mapReady ? <LookFx mapRef={mapRef} flights={flights} detections={detections} /> : null}
+      {engine === "gl" && mapReady && imagery === "dark" ? <LookFx mapRef={mapRef} flights={flights} detections={detections} /> : null}
       <div className="pointer-events-none absolute bottom-28 left-3 hidden rounded-full border border-border bg-bg/80 px-2.5 py-1 font-mono text-[11px] tabular-nums text-muted md:block">
         {cursor}
         <span className="mx-1.5 text-subtle">·</span>

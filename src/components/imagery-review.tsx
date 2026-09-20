@@ -1,3 +1,6 @@
+import { useAnalysisArea } from "@/lib/analysis-area";
+import { useAppStore } from "@/lib/store";
+import { SatelliteAutoScan, CandidateChips } from "./satellite-auto-scan";
 import { useEffect, useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
@@ -65,10 +68,11 @@ function download(name: string, text: string, type: string) {
 }
 export function ImageryReviewWorkbench() {
   const [open, setOpen] = useState(false);
+  const mapOverlay = useAnalysisArea((s) => s.overlay);
   const [review, setReview] = useState<ImageryReview>(newImageryReview);
   const [saved, setSaved] = useState<ImageryReview[]>([]);
   const [status, setStatus] = useState(
-    "Images stay in this browser. Save a review or export a backup before leaving.",
+    "Choose two dates and run a scan. The app finds and processes the imagery for you.",
   );
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState<"side" | "swipe">("side");
@@ -80,6 +84,17 @@ export function ImageryReviewWorkbench() {
   const start = useRef<{ x: number; y: number } | null>(null);
   const [threshold, setThreshold] = useState(35);
   const [difference, setDifference] = useState<{ url: string; summary: string } | null>(null);
+  useEffect(() => {
+    const select = (e: Event) => {
+      const id = (e as CustomEvent<string>).detail;
+      if (review.marks.some((m) => m.id === id)) {
+        setSelected(id);
+        setOpen(true);
+      }
+    };
+    window.addEventListener("civilian-candidate-select", select);
+    return () => window.removeEventListener("civilian-candidate-select", select);
+  }, [review.marks]);
   const errors = validatePair(review);
   const active = review.marks.find((m) => m.id === selected);
   const patch = (changes: Partial<ImageryReview>) =>
@@ -114,6 +129,27 @@ export function ImageryReviewWorkbench() {
         m.id === selected ? { ...m, ...changes, updatedAt: new Date().toISOString() } : m,
       ),
     });
+  const decide = async (disposition: "confirmed-change" | "rejected") => {
+    const next: ImageryReview = {
+      ...review,
+      updatedAt: new Date().toISOString(),
+      marks: review.marks.map((m) =>
+        m.id === selected
+          ? {
+              ...m,
+              disposition,
+              assessment:
+                disposition === "confirmed-change" ? "visible-change" : "no-visible-change",
+              updatedAt: new Date().toISOString(),
+            }
+          : m,
+      ),
+    };
+    await saveImageryReview(next);
+    setReview(next);
+    setSaved(await listImageryReviews());
+    setStatus("Analyst decision saved. No model accuracy or damage claim is implied.");
+  };
   const rectangles = (
     <svg
       viewBox="0 0 100 100"
@@ -226,8 +262,17 @@ export function ImageryReviewWorkbench() {
   }
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
+      {mapOverlay && !open && (
+        <div className="ir-map-result">
+          <b>DATED SCAN · {mapOverlay.date}</b>
+          <span>{mapOverlay.features.features.length} change candidates · for review</span>
+          <button onClick={() => useAnalysisArea.getState().setOverlay(null)}>
+            Hide scan layer
+          </button>
+        </div>
+      )}
       <Dialog.Trigger asChild>
-        <button className="ir-launch">IMAGERY REVIEW</button>
+        <button className="ir-launch">AUTO CHANGE SCAN</button>
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="ir-backdrop" />
@@ -235,16 +280,31 @@ export function ImageryReviewWorkbench() {
           <header className="ir-header">
             <div>
               <span className="ir-kicker">ABU HUREIRAH / CIVILIAN ANALYSIS</span>
-              <Dialog.Title>Before / after review</Dialog.Title>
+              <Dialog.Title>Automatic satellite change scan</Dialog.Title>
               <Dialog.Description>
-                Compare building and infrastructure imagery. Mark observations, explain uncertainty,
-                preserve the evidence.
+                Find dated imagery, screen cloud cover, and surface civilian infrastructure change
+                candidates.
               </Dialog.Description>
             </div>
             <Dialog.Close className="ir-button" aria-label="Close imagery review">
               Close
             </Dialog.Close>
           </header>
+          <SatelliteAutoScan
+            onShowMap={() => setOpen(false)}
+            busy={busy}
+            setBusy={setBusy}
+            onStatus={setStatus}
+            onComplete={async (next) => {
+              if (review.before || review.after) await saveImageryReview(review);
+              await saveImageryReview(next);
+              setReview(next);
+              setSaved(await listImageryReviews());
+              setSelected(next.marks[0]?.id ?? null);
+              setMode("side");
+              setDifference(null);
+            }}
+          />
           <div className="ir-toolbar">
             <input
               aria-label="Review title"
@@ -321,83 +381,91 @@ export function ImageryReviewWorkbench() {
             </label>
           </div>
           <p className="ir-status" role="status">
-            {busy ? "Working…" : status}
+            {status}
           </p>
           <div className="ir-body">
             <main>
-              <div className="ir-loaders">
-                {(["before", "after"] as const).map((side) => (
-                  <section key={side}>
-                    <h3>{side === "before" ? "01 / BEFORE" : "02 / AFTER"}</h3>
-                    <label className="ir-button">
-                      {review[side] ? "Replace image" : "Load image"}
-                      <input
-                        className="ir-file"
-                        aria-label={`Load ${side} image`}
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp"
-                        disabled={busy || review.marks.length > 0}
-                        onChange={(e) => {
-                          const f = e.target.files?.[0];
-                          e.target.value = "";
-                          if (f)
-                            void act(async () => {
-                              const scene = await loadScene(f);
-                              patch({ [side]: scene, alignmentConfirmed: false });
-                              setStatus("Image loaded. Enter its actual capture date and source.");
-                            });
-                        }}
-                      />
-                    </label>
-                    {review[side] && (
-                      <>
-                        <p>
-                          {review[side].name} · {review[side].width} × {review[side].height}
-                        </p>
-                        <label>
-                          Capture date
-                          <input
-                            type="text"
-                            placeholder="YYYY-MM-DD"
-                            maxLength={10}
-                            inputMode="numeric"
-                            aria-label={`${side} capture date`}
-                            value={review[side].capturedAt}
-                            onChange={(e) =>
-                              patch({ [side]: { ...review[side], capturedAt: e.target.value } })
-                            }
-                          />
-                        </label>
-                        <label>
-                          Source / provider
-                          <input
-                            aria-label={`${side} image source`}
-                            maxLength={300}
-                            value={review[side].source}
-                            onChange={(e) =>
-                              patch({ [side]: { ...review[side], source: e.target.value } })
-                            }
-                          />
-                        </label>
-                      </>
-                    )}
-                  </section>
-                ))}
-              </div>
-              <p className="ir-hint">
-                Use aligned crops of the same area. PNG, JPEG or WebP, up to 20 MB each. Working
-                copies are capped at 2,048 pixels; the original file hash is retained. Start a new
-                review to replace images after marking areas.
-              </p>
+              <details className="ir-manual">
+                <summary>Optional: use your own aligned imagery</summary>
+                <div className="ir-loaders">
+                  {(["before", "after"] as const).map((side) => (
+                    <section key={side}>
+                      <h3>{side === "before" ? "01 / BEFORE" : "02 / AFTER"}</h3>
+                      <label className="ir-button">
+                        {review[side] ? "Replace image" : "Load image"}
+                        <input
+                          className="ir-file"
+                          aria-label={`Load ${side} image`}
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp"
+                          disabled={busy || review.marks.length > 0}
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            e.target.value = "";
+                            if (f)
+                              void act(async () => {
+                                const scene = await loadScene(f);
+                                patch({ [side]: scene, alignmentConfirmed: false });
+                                setStatus(
+                                  "Image loaded. Enter its actual capture date and source.",
+                                );
+                              });
+                          }}
+                        />
+                      </label>
+                      {review[side] && (
+                        <>
+                          <p>
+                            {review[side].name} · {review[side].width} × {review[side].height}
+                          </p>
+                          <label>
+                            Capture date
+                            <input
+                              type="text"
+                              placeholder="YYYY-MM-DD"
+                              maxLength={10}
+                              inputMode="numeric"
+                              aria-label={`${side} capture date`}
+                              value={review[side].capturedAt}
+                              onChange={(e) =>
+                                patch({ [side]: { ...review[side], capturedAt: e.target.value } })
+                              }
+                            />
+                          </label>
+                          <label>
+                            Source / provider
+                            <input
+                              aria-label={`${side} image source`}
+                              maxLength={300}
+                              value={review[side].source}
+                              onChange={(e) =>
+                                patch({ [side]: { ...review[side], source: e.target.value } })
+                              }
+                            />
+                          </label>
+                        </>
+                      )}
+                    </section>
+                  ))}
+                </div>
+                <p className="ir-hint">
+                  Use aligned crops of the same area. PNG, JPEG or WebP, up to 20 MB each. Working
+                  copies are capped at 2,048 pixels; the original file hash is retained. Start a new
+                  review to replace images after marking areas.
+                </p>
+              </details>
               <label className="ir-check">
                 <input
                   type="checkbox"
                   checked={review.alignmentConfirmed}
                   onChange={(e) => patch({ alignmentConfirmed: e.target.checked })}
                 />
-                I checked stable landmarks: both images cover the same area and are aligned.
+                Use this aligned pair for comparison; inspect stable landmarks for residual
+                misalignment.
               </label>
-              {errors.length > 0 && <p className="ir-notice">{errors.join(" ")}</p>}
+              {review.before && errors.length > 0 && (
+                <p className="ir-notice">{errors.join(" ")}</p>
+              )}
               <div className="ir-controls">
                 <button aria-pressed={mode === "side"} onClick={() => setMode("side")}>
                   Side by side
@@ -451,7 +519,7 @@ export function ImageryReviewWorkbench() {
                     })
                   }
                 >
-                  {difference ? "Hide pixel changes" : "Show pixel changes"}
+                  {difference ? "Hide raw pixel differences" : "Show raw pixel differences"}
                 </button>
                 <label>
                   Threshold{" "}
@@ -505,7 +573,7 @@ export function ImageryReviewWorkbench() {
                       {review.before ? (
                         stage(review.before, false)
                       ) : (
-                        <div className="ir-empty">Load the earlier image</div>
+                        <div className="ir-empty">Run a scan to acquire the earlier scene</div>
                       )}
                     </div>
                   )}
@@ -514,7 +582,7 @@ export function ImageryReviewWorkbench() {
                     {review.after ? (
                       stage(review.after, true)
                     ) : (
-                      <div className="ir-empty">Load the later image</div>
+                      <div className="ir-empty">The later scene appears here automatically</div>
                     )}
                   </div>
                 </div>
@@ -538,12 +606,55 @@ export function ImageryReviewWorkbench() {
                     onClick={() => setSelected(m.id)}
                   >
                     {i + 1}. {m.label}
-                    <small>{REVIEW_ASSESSMENTS[m.assessment]}</small>
+                    <small>
+                      {m.disposition === "confirmed-change"
+                        ? "Change confirmed by analyst"
+                        : m.disposition === "rejected"
+                          ? "Rejected"
+                          : REVIEW_ASSESSMENTS[m.assessment]}
+                    </small>
                   </button>
                 ))}
               </div>
               {active && (
                 <div className="ir-editor">
+                  <CandidateChips before={review.before} after={review.after} area={active} />
+                  {mapOverlay?.features.features.some(
+                    (f) => f.properties?.reviewMarkId === active.id,
+                  ) && (
+                    <button
+                      onClick={() => {
+                        const f = mapOverlay.features.features.find(
+                          (f) => f.properties?.reviewMarkId === active.id,
+                        )!;
+                        const ring = f.geometry.coordinates[0].slice(0, 4);
+                        const lon = ring.reduce((v, p) => v + p[0], 0) / 4,
+                          lat = ring.reduce((v, p) => v + p[1], 0) / 4;
+                        useAppStore.getState().setImagery("hires");
+                        useAppStore.getState().setFlyTarget({
+                          lon,
+                          lat,
+                          zoom: 16.7,
+                          label: active.label,
+                          inspect: true,
+                        });
+                        setOpen(false);
+                      }}
+                    >
+                      Inspect candidate on map
+                    </button>
+                  )}
+                  <div className="ir-controls">
+                    <button
+                      disabled={busy}
+                      onClick={() => void act(() => decide("confirmed-change"))}
+                    >
+                      Confirm visible change
+                    </button>
+                    <button disabled={busy} onClick={() => void act(() => decide("rejected"))}>
+                      Reject candidate
+                    </button>
+                  </div>
                   <label>
                     Area name
                     <input
@@ -633,8 +744,8 @@ export function ImageryReviewWorkbench() {
                 </button>
               </div>
               <p className="ir-hint">
-                The report embeds both images, outlines, dates, original file hashes and analyst
-                notes. JSON can be imported into this workbench.
+                The report embeds both images, outlines, dates, image hashes and analyst notes. JSON
+                can be imported into this workbench.
               </p>
             </aside>
           </div>

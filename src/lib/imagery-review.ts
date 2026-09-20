@@ -8,6 +8,7 @@ export interface ReviewScene {
   width: number;
   height: number;
   originalSha256: string;
+  hashKind?: "original-file" | "decoded-rgb";
   dataUrl: string;
   resolutionM: number | null;
   bbox: { west: number; south: number; east: number; north: number } | null;
@@ -22,6 +23,7 @@ export interface ReviewMark {
   assessment:
     "unreviewed" | "possible-damage" | "visible-change" | "no-visible-change" | "uncertain";
   confidence: "low" | "medium" | "high";
+  disposition?: "pending" | "confirmed-change" | "rejected";
   note: string;
   updatedAt: string;
 }
@@ -207,6 +209,7 @@ export function parseImageryReview(text: string): ImageryReview {
           width: s.width,
           height: s.height,
           originalSha256: s.originalSha256,
+          ...(s.hashKind === "decoded-rgb" ? { hashKind: "decoded-rgb" as const } : {}),
           dataUrl: s.dataUrl,
           resolutionM: Number.isFinite(s.resolutionM) ? s.resolutionM : null,
           bbox:
@@ -231,6 +234,9 @@ export function parseImageryReview(text: string): ImageryReview {
       label: m.label,
       assessment: m.assessment,
       confidence: m.confidence,
+      ...(m.disposition && ["pending", "confirmed-change", "rejected"].includes(m.disposition)
+        ? { disposition: m.disposition }
+        : {}),
       note: m.note,
       updatedAt: typeof m.updatedAt === "string" ? m.updatedAt : "",
     })),
@@ -247,7 +253,7 @@ export function reviewHtml(review: ImageryReview): string {
     );
   const scene = (s: ReviewScene | null, label: string) =>
     s
-      ? `<figure><figcaption><b>${label} · ${esc(s.capturedAt || "Capture date unknown")}</b><br>${esc(s.source)} · ${s.width} × ${s.height}</figcaption><div class="scene"><img src="${s.dataUrl}" alt="${label} scene"><svg viewBox="0 0 100 100" preserveAspectRatio="none">${r.marks.map((m, i) => `<rect x="${m.x * 100}" y="${m.y * 100}" width="${m.width * 100}" height="${m.height * 100}"/><text x="${m.x * 100}" y="${Math.max(3, m.y * 100 - 1)}">${i + 1}</text>`).join("")}</svg></div><small>Original SHA-256: ${esc(s.originalSha256)}<br>Source: ${esc(s.sourceUrl ?? s.name)}</small></figure>`
+      ? `<figure><figcaption><b>${label} · ${esc(s.capturedAt || "Capture date unknown")}</b><br>${esc(s.source)} · ${s.width} × ${s.height}</figcaption><div class="scene"><img src="${s.dataUrl}" alt="${label} scene"><svg viewBox="0 0 100 100" preserveAspectRatio="none">${r.marks.map((m, i) => `<rect x="${m.x * 100}" y="${m.y * 100}" width="${m.width * 100}" height="${m.height * 100}"/><text x="${m.x * 100}" y="${Math.max(3, m.y * 100 - 1)}">${i + 1}</text>`).join("")}</svg></div><small>${s.hashKind === "decoded-rgb" ? "Decoded analysis RGB" : "Original file"} SHA-256: ${esc(s.originalSha256)}<br>Source: ${esc(s.sourceUrl ?? s.name)}</small></figure>`
       : "";
-  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${esc(r.title)}</title><style>body{font:15px/1.6 system-ui;color:#202b27;background:#f7f9f8;margin:32px auto;max-width:1200px;padding:24px}h1{font-size:32px}header p,small{color:#53635b}small{overflow-wrap:anywhere}.pair{display:grid;grid-template-columns:1fr 1fr;gap:20px}figure{margin:0}figcaption{margin-bottom:8px}.scene{position:relative}.scene img{display:block;width:100%}.scene svg{position:absolute;inset:0;width:100%;height:100%}rect{fill:none;stroke:#edaa43;stroke-width:.35}text{fill:#edaa43;font:bold 3px system-ui}article{padding:16px 0;border-bottom:1px solid #cbd4cf}p{white-space:pre-wrap}.notice{padding:16px;border-left:3px solid #b9822c;background:#efeee6}@media(max-width:700px){.pair{grid-template-columns:1fr}}@media print{body{margin:0}article,figure{break-inside:avoid}}</style><header><p>ABU HUREIRAH · CIVILIAN IMAGERY REVIEW</p><h1>${esc(r.title)}</h1><p>Updated ${esc(r.updatedAt)} · ${r.marks.length} areas marked</p></header><p class="notice">${esc(REVIEW_LIMITATIONS)}${r.alignmentConfirmed ? "" : " Alignment was NOT confirmed."}</p><div class="pair">${scene(r.before, "BEFORE")}${scene(r.after, "AFTER")}</div><h2>Analyst observations</h2>${r.marks.map((m, i) => `<article><h3>${i + 1}. ${esc(m.label)}</h3><b>${esc(REVIEW_ASSESSMENTS[m.assessment])} · ${esc(m.confidence)} confidence</b><p>${esc(m.note || "No rationale supplied.")}</p></article>`).join("")}<h2>Review notes</h2><p>${esc(r.notes || "No additional notes.")}</p></html>`;
+  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${esc(r.title)}</title><style>body{font:15px/1.6 system-ui;color:#202b27;background:#f7f9f8;margin:32px auto;max-width:1200px;padding:24px}h1{font-size:32px}header p,small{color:#53635b}small{overflow-wrap:anywhere}.pair{display:grid;grid-template-columns:1fr 1fr;gap:20px}figure{margin:0}figcaption{margin-bottom:8px}.scene{position:relative}.scene img{display:block;width:100%}.scene svg{position:absolute;inset:0;width:100%;height:100%}rect{fill:none;stroke:#edaa43;stroke-width:.35}text{fill:#edaa43;font:bold 3px system-ui}article{padding:16px 0;border-bottom:1px solid #cbd4cf}p{white-space:pre-wrap}.notice{padding:16px;border-left:3px solid #b9822c;background:#efeee6}@media(max-width:700px){.pair{grid-template-columns:1fr}}@media print{body{margin:0}article,figure{break-inside:avoid}}</style><header><p>ABU HUREIRAH · CIVILIAN IMAGERY REVIEW</p><h1>${esc(r.title)}</h1><p>Updated ${esc(r.updatedAt)} · ${r.marks.length} areas marked</p></header><p class="notice">${esc(REVIEW_LIMITATIONS)}${r.alignmentConfirmed ? "" : " Alignment was NOT confirmed."}</p><div class="pair">${scene(r.before, "BEFORE")}${scene(r.after, "AFTER")}</div><h2>Analyst observations</h2>${r.marks.map((m, i) => `<article><h3>${i + 1}. ${esc(m.label)}</h3><b>${esc(REVIEW_ASSESSMENTS[m.assessment])} · ${esc(m.confidence)} confidence · ${esc(m.disposition ?? "pending")}</b><p>${esc(m.note || "No rationale supplied.")}</p></article>`).join("")}<h2>Review notes</h2><p>${esc(r.notes || "No additional notes.")}</p></html>`;
 }

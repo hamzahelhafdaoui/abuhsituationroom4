@@ -1,5 +1,5 @@
 /** Coalesce simultaneous refreshes; failed requests are retryable and never cached. */
-export function createRequestCache() {
+export function createRequestCache(maxEntries = 128) {
   const values = new Map<string, { at: number; value: unknown }>();
   const pending = new Map<string, Promise<unknown>>();
   return function cached<T>(key: string, ttl: number, fetcher: () => Promise<T>): Promise<T> {
@@ -11,6 +11,7 @@ export function createRequestCache() {
       .then(fetcher)
       .then((value) => {
         values.set(key, { at: Date.now(), value });
+        if (values.size > maxEntries) values.delete(values.keys().next().value!);
         return value;
       })
       .finally(() => pending.delete(key));

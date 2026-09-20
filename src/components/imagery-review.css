@@ -324,3 +324,110 @@
 .ir-image-scroll > .ir-pair {
   min-width: 100%;
 }
+.ir-auto {
+  border: 1px solid #806b44;
+  background: linear-gradient(120deg, #26332e, #142329);
+  border-radius: 8px;
+  padding: 18px;
+  margin: 20px 0;
+}
+.ir-auto h3 {
+  font: 600 22px system-ui;
+  color: #f0e7d8;
+  margin: 8px 0;
+}
+.ir-auto p {
+  font-size: 13px;
+  color: #b6c6c4;
+}
+.ir-auto-fields {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.ir-auto-fields label {
+  font-size: 12px;
+  color: #a9bcb9;
+}
+.ir-workbench .ir-run {
+  background: #dcad63;
+  border-color: #dcad63;
+  color: #17201d;
+  font-weight: 700;
+}
+.ir-auto-result {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #49605a;
+}
+.ir-auto-result a {
+  display: block;
+  color: #dfbe86;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+.ir-manual {
+  margin: 8px 0;
+}
+.ir-manual summary {
+  color: #a4b9bc;
+  cursor: pointer;
+  padding: 10px 0;
+}
+.ir-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 14px 0;
+}
+.ir-chips figcaption {
+  font: 10px monospace;
+  color: #d9bc8a;
+  margin-bottom: 6px;
+}
+.ir-chips figure {
+  min-width: 0;
+}
+.ir-chips img {
+  image-rendering: pixelated;
+}
+@media (max-width: 850px) {
+  .ir-auto-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+  .ir-auto h3 {
+    font-size: 20px;
+  }
+}
+.ir-map-result {
+  position: absolute;
+  bottom: 164px;
+  right: 12px;
+  z-index: 40;
+  background: #122323ee;
+  color: #dce9e4;
+  border: 1px solid #9b8154;
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: grid;
+  gap: 5px;
+  font: 11px monospace;
+  max-width: 300px;
+  pointer-events: auto;
+}
+.ir-map-result b {
+  color: #e4bd80;
+}
+.ir-map-result button {
+  text-align: left;
+  text-decoration: underline;
+  color: #d6b880;
+}
+@media (max-width: 767px) {
+  .ir-map-result {
+    bottom: 75px;
+    right: 12px;
+    max-width: 270px;
+  }
+}
