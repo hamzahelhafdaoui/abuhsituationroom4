@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle, CircleHelp, ClipboardList, FileText, Layers, Minus, Newspaper, PanelRight, Plane, Plus, RefreshCw, Ruler, Search, Shield } from "lucide-react";
 import { ALERTS, FLIGHTS, OBSERVATIONS, SITES } from "@/data/catalog";
-import { VESSEL_SEED } from "@/data/regional-sites";
 import { ingestLive } from "@/lib/changelog";
 import { getLiveBundle, getTraffic } from "@/lib/live";
 import { getNewsFeed } from "@/lib/news";
@@ -28,6 +27,8 @@ import { ControlLegend, DetectPanel } from "@/components/monitor-panels";
 import { ClassificationBar, ClockChip, SensorBar, SitroomFx } from "@/components/hud-overlay";
 import { LookTray } from "@/components/sensor-fx";
 import { BasemapPicker, LayerStack } from "@/components/map-chrome";
+import { ImageryReviewWorkbench } from "@/components/imagery-review";
+import { emptyLiveBundle } from "@/lib/live-state";
 
 const JUMP = [
   { id: "hsss", label: "Khartoum" },
@@ -190,7 +191,7 @@ export function Workspace() {
     setLive((prev) => {
       const keepNews = b.news.length === 0 && (prev?.news.length ?? 0) > 0;
       return keepNews
-        ? { ...b, news: prev!.news, newsPoints: prev!.newsPoints, newsMeta: prev!.newsMeta, ticker: prev!.ticker }
+        ? { ...b, news: prev!.news, newsPoints: prev!.newsPoints, newsMeta: { ...b.newsMeta, status: "stale", note: "Latest news refresh returned no rows. Previous results retained; check publication dates." }, ticker: prev!.ticker }
         : b;
     });
     setLiveError(null);
@@ -245,24 +246,11 @@ export function Workspace() {
       setLive((prev) => {
         if (!prev) {
           return {
-            firms: [],
-            firmsMeta: n.meta,
-            flights: [],
-            flightsMeta: n.meta,
-            reports: [],
-            reportsMeta: n.meta,
+            ...emptyLiveBundle(),
             news: n.items,
             newsPoints: n.points,
             newsMeta: n.meta,
-            gdelt: GDELT_ARCHIVE,
-            gdeltMeta: n.meta,
-            osm: OSM_SEED,
-            osmMeta: n.meta,
-            feeds: [],
-            feedsMeta: n.meta,
             ticker: n.items.map((i) => ({ source: i.source, title: i.title, url: i.url })),
-            vessels: VESSEL_SEED,
-            vesselsMeta: n.meta,
           };
         }
         const nextLive = {
@@ -281,6 +269,11 @@ export function Workspace() {
       setNewsLoading(true);
       getNewsFeed()
         .then(applyNews)
+        .catch(() => {
+          if (!cancelled) setLive(prev => ({ ...(prev ?? emptyLiveBundle()), newsMeta: {
+            ...(prev ?? emptyLiveBundle()).newsMeta, status: prev?.news.length ? "stale" : "error", note: "News refresh failed. Any retained headlines keep their original publication dates.",
+          } }));
+        })
         .finally(() => {
           if (!cancelled) setNewsLoading(false);
         });
@@ -304,22 +297,9 @@ export function Workspace() {
           setLive((prev) => {
             if (!prev) {
               return {
-                firms: [],
-                firmsMeta: t.flightsMeta,
+                ...emptyLiveBundle(),
                 flights: mergeFlights(t.flights),
                 flightsMeta: t.flightsMeta,
-                reports: [],
-                reportsMeta: t.flightsMeta,
-                news: [],
-                newsPoints: [],
-                newsMeta: t.flightsMeta,
-                gdelt: GDELT_ARCHIVE,
-                gdeltMeta: t.flightsMeta,
-                osm: OSM_SEED,
-                osmMeta: t.flightsMeta,
-                feeds: [],
-                feedsMeta: t.flightsMeta,
-                ticker: [],
                 vessels: t.vessels,
                 vesselsMeta: t.vesselsMeta,
               };
@@ -908,16 +888,18 @@ export function Workspace() {
             <RightRail {...rightProps} />
           </div>
         </div>
-      ) : (
-        <button
-          type="button"
-          className="pointer-events-auto absolute bottom-28 right-3 z-20 flex h-11 items-center gap-2 rounded-full border border-border bg-bg/85 px-4 text-xs text-fg"
-          onClick={() => openDesk("queue")}
-        >
-          <PanelRight className="size-3.5" />
-          Flags · briefs · logs
-        </button>
-      )}
+      ) : null}
+      <ImageryReviewWorkbench />
+      <button
+        type="button"
+        aria-label="Toggle documentation drawer"
+        aria-expanded={deskOpen}
+        className="pointer-events-auto absolute bottom-5 right-3 z-40 flex h-11 items-center gap-2 rounded-md border border-accent bg-bg/95 px-4 font-mono text-xs text-accent md:bottom-28"
+        onClick={(e) => { e.stopPropagation(); setDeskOpen(v => !v); }}
+      >
+        <PanelRight className="size-4" />
+        DOCS
+      </button>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 hidden p-3 md:block">
         <div className="pointer-events-auto mx-auto mb-2 flex max-w-5xl justify-center">
@@ -937,42 +919,13 @@ export function Workspace() {
         </div>
       </div>
 
-      <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-20 flex h-[42vh] flex-col md:hidden">
-        <div className="min-h-0 flex-1 overflow-y-auto border-t border-border bg-bg/95">
-          {tab === "layers" ? <LeftRail {...railProps} /> : <RightRail {...rightProps} force={tab} />}
-        </div>
-        <div className="flex shrink-0 items-center gap-0.5 border-t border-border bg-bg px-1 py-1.5">
-          {([
-            ["news", "News", Newspaper],
-            ["fuae", "FUAE", Plane],
-            ["log", "Log", FileText],
-            ["alerts", "Flags", AlertTriangle],
-            ["brief", "Brief", ClipboardList],
-            ["layers", "Layers", Layers],
-          ] as const).map(([id, label, Icon]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => pickMobile(id)}
-              className={cn(
-                "flex h-11 min-w-0 flex-1 flex-col items-center justify-center rounded-lg text-[10px]",
-                tab === id ? "bg-raised text-fg" : "text-muted",
-              )}
-            >
-              <Icon className="size-4" />
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {helpOpen ? (
         <div
           className="pointer-events-auto absolute inset-0 z-50 flex items-center justify-center bg-bg/80 p-3"
           role="dialog"
           aria-modal="true"
           aria-labelledby="help-title"
-          onClick={() => setHelpOpen(false)}
+          onClick={(e) => { e.stopPropagation(); setHelpOpen(false); }}
           onPointerDown={(e) => {
             if (e.target === e.currentTarget) setHelpOpen(false);
           }}
@@ -1016,9 +969,10 @@ export function Workspace() {
               <button
                 type="button"
                 className="h-12 rounded-xl bg-accent text-sm font-medium text-accent-fg"
-                onClick={() => setHelpOpen(false)}
+                onClick={(e) => { e.stopPropagation(); setHelpOpen(false); }}
                 onPointerUp={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   setHelpOpen(false);
                 }}
               >

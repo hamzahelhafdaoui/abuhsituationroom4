@@ -746,6 +746,7 @@ export function MapCanvas({
             "circle-stroke-color": "#12110f",
           },
         });
+        map.addSource("detections", { type: "geojson", data: detectFc(detections) });
         map.addLayer({
           id: "detect-fill",
           type: "fill",
@@ -1076,7 +1077,7 @@ export function MapCanvas({
     if (!map || !ready.current) return;
     const src = map.getSource("detections");
     if (src && "setData" in src) (src as { setData: (d: FC) => void }).setData(detectFc(detections));
-  }, [detections]);
+  }, [detections, mapReady]);
 
   useEffect(() => {
     const map = mapRef.current;

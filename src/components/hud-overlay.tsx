@@ -10,7 +10,6 @@ function zulu(now: Date) {
 
 export function SitroomFx() {
   const hudOn = useAppStore((s) => s.hudOn);
-  const look = useAppStore((s) => s.look);
   const [slew, setSlew] = useState<SlewDetail>({ phase: "idle" });
   useEffect(() => {
     const on = (e: Event) => setSlew((e as CustomEvent<SlewDetail>).detail);
@@ -18,12 +17,9 @@ export function SitroomFx() {
     return () => window.removeEventListener("ahsr-slew", on);
   }, []);
   if (!hudOn) return null;
-  const cssFx = look === "none";
   const slewing = slew.phase === "slewing" || slew.phase === "lock";
   return (
     <>
-      {cssFx ? <div className="sitroom-vignette" /> : null}
-      {cssFx ? <div className="sitroom-scanlines" /> : null}
       <div className={cn("sitroom-crosshair", slewing && "is-slew")} aria-hidden="true">
         <span className="ch-h" />
         <span className="ch-v" />
