@@ -1,4 +1,4 @@
-//#region node_modules/.nitro/vite/services/ssr/assets/doctrine-BoQ_KKoM.js
+//#region D:/Codex-work/ahsr-20260920/node_modules/.nitro/vite/services/ssr/assets/doctrine-BoQ_KKoM.js
 var CLAIM_CLASS = {
 	observed: "Visible or measurable in the source itself",
 	verified: "Multiple independent credible origins",

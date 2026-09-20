@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useHazardState } from '@/lib/hazard-state';
 import {
   ChevronDown,
   Flame,
@@ -109,12 +110,14 @@ export function LayerStack({
 }) {
   const layers = useAppStore((s) => s.layers);
   const toggle = useAppStore((s) => s.toggleLayer);
+  const hazardCount = useHazardState(s => s.feed?.events.length ?? 0);
   const rows: { key: LayerKey; label: string; count?: number; icon: typeof Flame }[] = [
     { key: "ai", label: "AI events", count: counts.ai, icon: Sparkles },
     { key: "rsfWatch", label: "RSF watch", count: RSF_WATCH.length, icon: Shield },
     { key: "vista", label: "Vista map", count: VISTA.features.length, icon: Shield },
     { key: "reports", label: "Reports", count: counts.reports, icon: Radio },
     { key: "news", label: "News", count: counts.news, icon: Newspaper },
+    { key: 'hazards', label: 'Natural hazards', count: hazardCount, icon: Radio },
     { key: "firms", label: "Fire hotspots", count: counts.fires, icon: Flame },
     { key: "gdelt", label: "Forwarded intel", count: counts.feeds, icon: Radio },
     { key: "flights", label: "Flights", count: counts.flights, icon: Plane },

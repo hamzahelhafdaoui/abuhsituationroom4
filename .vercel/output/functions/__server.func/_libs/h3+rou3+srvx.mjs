@@ -1,5 +1,7 @@
+import "node:http";
 import { PassThrough, Readable } from "node:stream";
-//#region node_modules/srvx/dist/_chunks/_url.mjs
+import "node:https";
+//#region D:/Codex-work/ahsr-20260920/node_modules/srvx/dist/_chunks/_url.mjs
 function lazyInherit(target, source, sourceKey) {
 	for (const key of [...Object.getOwnPropertyNames(source), ...Object.getOwnPropertySymbols(source)]) {
 		if (key === "constructor") continue;
@@ -134,7 +136,7 @@ var FastURL = /* @__PURE__ */ (() => {
 	return FastURL;
 })();
 //#endregion
-//#region node_modules/srvx/dist/adapters/node.mjs
+//#region D:/Codex-work/ahsr-20260920/node_modules/srvx/dist/adapters/node.mjs
 var NodeResponse = /* @__PURE__ */ (() => {
 	const NativeResponse = globalThis.Response;
 	const STATUS_CODES = globalThis.process?.getBuiltinModule?.("node:http")?.STATUS_CODES || {};
@@ -245,13 +247,13 @@ var NodeResponse = /* @__PURE__ */ (() => {
 	return NodeResponse;
 })();
 //#endregion
-//#region node_modules/h3/node_modules/rou3/dist/index.mjs
+//#region D:/Codex-work/ahsr-20260920/node_modules/h3/node_modules/rou3/dist/index.mjs
 var NullProtoObj = /* @__PURE__ */ (() => {
 	const e = function() {};
 	return e.prototype = Object.create(null), Object.freeze(e.prototype), e;
 })();
 //#endregion
-//#region node_modules/h3/dist/h3.mjs
+//#region D:/Codex-work/ahsr-20260920/node_modules/h3/dist/h3.mjs
 function decodePathname(pathname) {
 	return decodeURI(pathname.includes("%25") ? pathname.replace(/%25/g, "%2525") : pathname);
 }

@@ -19,11 +19,17 @@
     "check:auth": "node scripts/check-auth-invariant.mjs",
     "test": "node --test 'scripts/**/*.test.mjs' && node --experimental-strip-types --test src/lib/app-data/app-data.test.ts src/lib/app-data/readiness-schedule.test.ts src/lib/auth/gate-identity.test.ts src/lib/auth/sign-in-gate.test.ts",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "mcp": "node scripts/mcp-server.mjs",
+    "test:integrations": "node --test --test-force-exit scripts/mcp-integration.test.mjs && node --experimental-strip-types --test --test-force-exit src/lib/hazards.test.ts src/lib/mapbox-geometry.test.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.4",
     "@hookform/resolvers": "^5.7.0",
+    "@mapbox/mcp-devkit-server": "^0.8.2",
+    "@mapbox/mcp-docs-server": "^0.3.1",
+    "@mapbox/mcp-server": "^0.14.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-avatar": "^1.1.11",

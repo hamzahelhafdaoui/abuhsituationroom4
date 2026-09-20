@@ -1,4 +1,5 @@
 import { useAnalysisArea } from "@/lib/analysis-area";
+import { useHazardState, refreshHazards } from '@/lib/hazard-state';
 import { useEffect, useRef, useState } from "react";
 import type { Map as MlMap, RasterTileSource, StyleSpecification } from "maplibre-gl";
 import { SITES } from "@/data/catalog";
@@ -451,12 +452,18 @@ export function MapCanvas({
   const wrap = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
   const analysisOverlay = useAnalysisArea(s => s.overlay);
+  const hazardFeed = useHazardState(s => s.feed);
   const ready = useRef(false);
   const hoverPopup = useRef<{ remove: () => void } | null>(null);
   const flightSnap = useRef({ rows: flights, at: Date.now() });
   const [engine, setEngine] = useState<"static" | "gl">("static");
   const [cursor, setCursor] = useState("—");
   const [mapReady, setMapReady] = useState(false);
+  useEffect(() => {
+    void refreshHazards();
+    const timer = window.setInterval(() => void refreshHazards(), 300_000);
+    return () => window.clearInterval(timer);
+  }, []);
   const layers = useAppStore((s) => s.layers);
   const imagery = useAppStore((s) => s.imagery);
   const date = useAppStore((s) => s.date);
@@ -526,7 +533,6 @@ export function MapCanvas({
       map.on("load", () => {
         if (!map || cancelled) return;
         map.resize();
-        setMapReady(true);
         addContactIcons(map);
 
         map.addSource("thermal-raster", { type: "raster", tiles: [thermalUrl(state.date)], tileSize: 256, maxzoom: 8, attribution: "NASA GIBS thermal" });
@@ -801,10 +807,13 @@ export function MapCanvas({
           },
         });
 
+        map.addSource('hazards', { type:'geojson', data:pointFc(useHazardState.getState().feed?.events ?? [],r=>({...r})) });
+        map.addLayer({id:'hazards',type:'circle',source:'hazards',paint:{'circle-radius':6,'circle-color':'#79c6df','circle-stroke-color':'#13202b','circle-stroke-width':2}});
         map.addSource("measure", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
         map.addLayer({ id: "measure-line", type: "line", source: "measure", paint: { "line-color": "#d8d2c6", "line-width": 2, "line-dasharray": [2, 1] } });
 
         ready.current = true;
+        setMapReady(true);
         setEngine("gl");
       });
 
@@ -826,6 +835,16 @@ export function MapCanvas({
       map.on("click", "sites", (e) => {
         const id = e.features?.[0]?.properties?.id as string | undefined;
         if (id) setSelectedSite(id);
+      });
+      map.on('click','hazards',e=>{
+        const f=e.features?.[0]; if(!f || f.geometry.type!=='Point') return;
+        const p=f.properties ?? {}, body=document.createElement('div');
+        body.style.cssText='font:12px/1.5 system-ui;max-width:260px';
+        const title=document.createElement('strong'); title.textContent=String(p.title ?? 'Natural event'); body.append(title);
+        const detail=document.createElement('p'); detail.textContent=`${p.provider} · ${p.at} · ${p.severity}`; body.append(detail);
+        const link=document.createElement('a'); link.textContent='Published source'; link.href=String(p.url); link.target='_blank'; link.rel='noopener noreferrer'; body.append(link);
+        hoverPopup.current?.remove();
+        hoverPopup.current=new Popup({closeButton:true,offset:14}).setLngLat(f.geometry.coordinates as [number,number]).setDOMContent(body).addTo(map!);
       });
       bindPopup("sites", (p) => `<div style="font:500 12px/1.35 'IBM Plex Sans',system-ui">${p.name ?? ""}</div>`);
       bindPopup("flights-icon", (p) => `<div style="font:500 12px/1.35 'IBM Plex Sans',system-ui">${p.label ?? p.hex}<div style="opacity:.7;font-size:11px">ADS-B · not a cargo claim</div></div>`);
@@ -1018,6 +1037,7 @@ export function MapCanvas({
     setVis("vista-div-label", vistaOn);
     setVis("osint-reports", layers.reports);
     setVis("news-pts", layers.news);
+    setVis("hazards", layers.hazards);
     setVis("ai-pts", layers.ai);
     setVis("gdelt", layers.gdelt);
     setVis("gdelt-glow", layers.gdelt);
@@ -1117,6 +1137,12 @@ export function MapCanvas({
     const src = map.getSource("news-pts");
     if (src && "setData" in src) (src as { setData: (d: FC) => void }).setData(pointFc(newsPoints, (r) => ({ name: r.name, count: r.count })));
   }, [newsPoints]);
+
+  useEffect(()=>{
+    const map=mapRef.current; if(!map || !mapReady) return;
+    const source=map.getSource('hazards');
+    if(source && 'setData' in source) (source as import('maplibre-gl').GeoJSONSource).setData({type:'FeatureCollection',features:(hazardFeed?.events ?? []).map(e=>({type:'Feature',properties:{...e},geometry:{type:'Point',coordinates:[e.lon,e.lat]}}))});
+  },[hazardFeed,mapReady]);
 
   useEffect(() => {
     const map = mapRef.current;

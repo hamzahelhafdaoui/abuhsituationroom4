@@ -261,6 +261,7 @@ export function LeftRail(props: {
               ["vista", "Vista control map", Shield],
               ["reports", "OSINT reports", FileText],
               ["news", "News pins", Search],
+              ["hazards", "Natural hazards · OSIRIS", Search],
               ["ai", "AI brief pins", FileText],
               ["gdelt", "GDELT events", AlertTriangle],
               ["osm", "OSM / airfields", Shield],

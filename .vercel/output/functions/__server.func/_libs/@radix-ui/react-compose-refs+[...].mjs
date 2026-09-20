@@ -1,5 +1,5 @@
-import { i as __toESM, t as __commonJSMin } from "../../_runtime.mjs";
-//#region node_modules/react/cjs/react.production.js
+import { o as __toESM, t as __commonJSMin } from "../../_runtime.mjs";
+//#region D:/Codex-work/ahsr-20260920/node_modules/react/cjs/react.production.js
 /**
 * @license React
 * react.production.js
@@ -375,12 +375,12 @@ var require_react_production = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.version = "19.2.8";
 }));
 //#endregion
-//#region node_modules/react/index.js
+//#region D:/Codex-work/ahsr-20260920/node_modules/react/index.js
 var require_react = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = require_react_production();
 }));
 //#endregion
-//#region node_modules/@radix-ui/react-compose-refs/dist/index.mjs
+//#region D:/Codex-work/ahsr-20260920/node_modules/@radix-ui/react-compose-refs/dist/index.mjs
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", {

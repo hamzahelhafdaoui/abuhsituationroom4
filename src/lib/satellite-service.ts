@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { analysisBounds, validateAnalysisGeometry } from './mapbox-geometry';
 import {
   scanInput,
   rankScenePairs,
@@ -18,18 +19,12 @@ async function catalogue(
   target: string,
   signal: AbortSignal,
 ): Promise<SatelliteScene[]> {
-  const deltaLat = input.sizeKm / 2 / 111.32,
-    deltaLon = deltaLat / Math.cos((input.lat * Math.PI) / 180);
+  const bounds = await analysisBounds(input.lon, input.lat, input.sizeKm);
   const day = Date.parse(target),
     delta = input.windowDays * 86400000;
   const params = new URLSearchParams({
     collections: "sentinel-2-l2a",
-    bbox: [
-      input.lon - deltaLon,
-      input.lat - deltaLat,
-      input.lon + deltaLon,
-      input.lat + deltaLat,
-    ].join(","),
+    bbox: bounds.join(','),
     datetime: `${new Date(day - delta).toISOString()}/${new Date(day + delta + 86399999).toISOString()}`,
     limit: "100",
     query: JSON.stringify({ "eo:cloud_cover": { lte: input.maxCloud } }),
@@ -185,6 +180,7 @@ async function run(input: AutoScanInput) {
           },
         })),
       };
+      await validateAnalysisGeometry(candidateFeatures);
       const pack = (pixels: Uint8Array) => Buffer.from(pixels).toString("base64");
       return {
         candidateFeatures,

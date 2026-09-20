@@ -22,6 +22,7 @@ import type {
 } from "@/lib/types";
 
 export type LayerKey =
+  | "hazards"
   | "sites"
   | "firms"
   | "flights"
@@ -191,6 +192,7 @@ export const useAppStore = create<AppState>()(
         thermalRaster: false,
         control: true,
         news: true,
+        hazards: true,
         reports: true,
         ai: true,
         gdelt: true,
