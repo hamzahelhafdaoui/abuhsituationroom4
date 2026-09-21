@@ -197,6 +197,7 @@ const TONE_DOT: Record<string, string> = {
 export function FeedsPanel({ items, meta }: { items: FeedItem[]; meta: LiveMeta | null }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3">
+      <HazardFeedRows />
       <p className="text-[11px] leading-snug text-subtle">
         Public Telegram web previews (t.me/s). Not a login, not a targeting feed.
         {meta?.fetchedAt ? ` Fetched ${meta.fetchedAt.slice(11, 16)}Z · ${meta.recordCount} notes.` : ""}
@@ -996,3 +997,4 @@ export function DetectPanel({
     </div>
   );
 }
+import { HazardFeedRows } from './hazard-feed';
